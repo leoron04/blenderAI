@@ -6,7 +6,7 @@ An advanced AI-powered Blender addon that integrates with multiple AI models (Ch
 
 ## Versione
 
-Current: **1.1.0**
+Current: **2.3.0
 
 ## Features
 
