@@ -23,6 +23,7 @@ Current: **1.1.0**
 - **💾 Smart Asset Manager**: Libreria asset locale con metadata JSON, ricerca semantica, categorizzazione automatica e import di asset con operatori dedicati.
 - **🎛 Batch Render Optimizer**: Analisi render scene (samples, denoiser), suggerimenti ottimizzazione, generazione script batch per multi-scene rendering.
 - **📈 Performance Analytics Dashboard**: Analyzer complessità scena (vertici, facce, materiali), statistiche real-time, scoring complessità, pannello read-only per health check.
+- **📚 Blender Knowledge Base v2.1**: ingestione automatica documentazione ufficiale (manuale, API `bpy`, guida add-on) con embedding semantici multi-versione (3.6–4.3) e RAG integrato nelle risposte AI.
 
 ## Installation
 

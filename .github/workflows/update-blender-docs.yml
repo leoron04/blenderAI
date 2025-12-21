@@ -1,0 +1,41 @@
+name: Update Blender Docs
+
+on:
+  schedule:
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+
+jobs:
+  update-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Update Blender documentation
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || '' }}
+        run: |
+          python -m blender_docs_updater --versions 4.0 4.1 4.2 4.3
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/blender_docs
+          if git diff --cached --quiet; then
+            echo "Nessun aggiornamento docs."
+            exit 0
+          fi
+          git commit -m "chore(ci): update Blender docs"
+          git push
