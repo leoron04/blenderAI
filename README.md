@@ -16,6 +16,14 @@ Current: **1.1.0**
 - **Operatori autonomi (stub sicuri)**: auto-material, auto-light (3-point/key), auto-geometry, auto-rig placeholder con hook futuro.
 - **Preview & Safety**: validazione minima, preview codice prima di applicare, logging sintetico redatto.
 
+- ## Phase 2: Ultra-Advanced Features
+
+- **🧮 Advanced Node Graph Integration**: Visualizza node graph della scena (shader, compositing, world) con suggerimenti AI per ottimizzazione nodi, analisi delle prestazioni e refresh real-time.
+- **🎬 AI Animation Generator**: Genera sequenze di keyframe basate su prompt (walk, rotate, camera orbit), con supporto per animazioni di camera e percorsi smooth automatici.
+- **💾 Smart Asset Manager**: Libreria asset locale con metadata JSON, ricerca semantica, categorizzazione automatica e import di asset con operatori dedicati.
+- **🎛 Batch Render Optimizer**: Analisi render scene (samples, denoiser), suggerimenti ottimizzazione, generazione script batch per multi-scene rendering.
+- **📈 Performance Analytics Dashboard**: Analyzer complessità scena (vertici, facce, materiali), statistiche real-time, scoring complessità, pannello read-only per health check.
+
 ## Installation
 
 1. Download or clone this repository
