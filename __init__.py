@@ -43,6 +43,8 @@ from . import animation_generator
 from . import asset_manager
 from . import render_optimizer
 from . import performance_monitor
+from . import visualization
+from . import enterprise
 
 _logger = logging.getLogger("blenderAI.import")
 if not _logger.handlers:
@@ -81,6 +83,8 @@ classes = (
     *asset_manager.classes,
     *render_optimizer.classes,
     *performance_monitor.classes,
+    *visualization.classes,
+    *enterprise.classes,
 )
 
 
@@ -111,6 +115,62 @@ def register():
     bpy.types.Scene.ai_temperature = bpy.props.FloatProperty(
         name="Temperature", description="Creatività modello", default=0.4, min=0.0, max=1.0
     )
+    bpy.types.Scene.ai_ensemble_enabled = bpy.props.BoolProperty(
+        name="Ensemble Multi-modello",
+        description="Combina più provider con voting pesato",
+        default=False,
+    )
+    bpy.types.Scene.ai_ensemble_weights = bpy.props.StringProperty(
+        name="Pesi Ensemble (JSON)",
+        description='Esempio: {"anthropic":1.5,"openai":1,"gemini":0.8}',
+        default="",
+    )
+    bpy.types.Scene.ai_semantic_cache_enabled = bpy.props.BoolProperty(
+        name="Semantic Cache",
+        description="Riusa risposte simili con embedding leggeri",
+        default=False,
+    )
+    bpy.types.Scene.ai_semantic_cache_threshold = bpy.props.FloatProperty(
+        name="Soglia Similarità",
+        description="Threshold cosine per cache semantica (0-1)",
+        default=0.82,
+        min=0.5,
+        max=0.99,
+    )
+    bpy.types.Scene.ai_collab_enabled = bpy.props.BoolProperty(
+        name="Realtime Collaboration",
+        description="Abilita WebSocket broadcast suggerimenti",
+        default=False,
+    )
+    bpy.types.Scene.ai_collab_host = bpy.props.StringProperty(
+        name="Collab Host",
+        default="0.0.0.0",
+    )
+    bpy.types.Scene.ai_collab_port = bpy.props.IntProperty(
+        name="Collab Port",
+        default=8765,
+        min=1024,
+        max=65535,
+    )
+    bpy.types.Scene.ai_collab_user = bpy.props.StringProperty(
+        name="Collab User",
+        default="guest",
+    )
+    bpy.types.Scene.ai_collab_project = bpy.props.StringProperty(
+        name="Project ID",
+        default="default",
+    )
+    bpy.types.Scene.ai_role = bpy.props.EnumProperty(
+        name="Ruolo",
+        items=[("admin", "Admin", ""), ("creator", "Creator", ""), ("viewer", "Viewer", "")],
+        default="creator",
+    )
+    bpy.types.Scene.ai_rate_limit = bpy.props.IntProperty(
+        name="Rate Limit (hour)",
+        default=120,
+        min=1,
+        max=10000,
+    )
     bpy.types.Scene.ai_prompt = bpy.props.StringProperty(name="Prompt", default="Analizza la scena e proponi azioni.")
     bpy.types.Scene.ai_last_response = bpy.props.StringProperty(name="Last Response", default="")
     bpy.types.Scene.ai_last_provider = bpy.props.StringProperty(name="Last Provider", default="")
@@ -126,6 +186,11 @@ def register():
     bpy.types.Scene.ai_render_report = bpy.props.StringProperty(name="Render Report", default="")
     bpy.types.Scene.ai_batch_script = bpy.props.StringProperty(name="Batch Script", default="")
     bpy.types.Scene.ai_perf_stats = bpy.props.StringProperty(name="Performance Stats", default="")
+    bpy.types.Scene.ai_overlay_preview = bpy.props.StringProperty(name="Overlay Preview", default="")
+    bpy.types.Scene.ai_keyframe_preview = bpy.props.StringProperty(name="Keyframe Preview", default="")
+    bpy.types.Scene.ai_node_heatmap = bpy.props.StringProperty(name="Node Heatmap", default="")
+    bpy.types.Scene.ai_usage_analytics = bpy.props.StringProperty(name="Usage Analytics", default="")
+    bpy.types.Scene.ai_export_path = bpy.props.StringProperty(name="Export Path", default="")
 
 
 def unregister():
@@ -148,6 +213,17 @@ def unregister():
         "ai_anthropic_key",
         "ai_google_key",
         "ai_temperature",
+        "ai_ensemble_enabled",
+        "ai_ensemble_weights",
+        "ai_semantic_cache_enabled",
+        "ai_semantic_cache_threshold",
+        "ai_collab_enabled",
+        "ai_collab_host",
+        "ai_collab_port",
+        "ai_collab_user",
+        "ai_collab_project",
+        "ai_role",
+        "ai_rate_limit",
         "ai_prompt",
         "ai_last_response",
         "ai_last_provider",
@@ -163,6 +239,11 @@ def unregister():
         "ai_render_report",
         "ai_batch_script",
         "ai_perf_stats",
+        "ai_overlay_preview",
+        "ai_keyframe_preview",
+        "ai_node_heatmap",
+        "ai_usage_analytics",
+        "ai_export_path",
     ]
     for attr in attrs:
         if hasattr(bpy.types.Scene, attr):

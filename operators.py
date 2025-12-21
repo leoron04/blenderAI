@@ -3,8 +3,10 @@ from __future__ import annotations
 from typing import Any, Dict
 
 import bpy
+import json
 
 from . import agent
+from . import collaboration
 from . import scene_analyzer
 from . import utils
 
@@ -29,12 +31,32 @@ class BLENDER_AI_OT_generate_suggestions(bpy.types.Operator):
 
     def execute(self, context: bpy.types.Context) -> set[str]:
         scene = context.scene
+
+        collaboration.ensure_started(scene.ai_collab_enabled, host=scene.ai_collab_host, port=scene.ai_collab_port)
+
+        try:
+            ensemble_weights = json.loads(scene.ai_ensemble_weights) if scene.ai_ensemble_weights else {}
+            if not isinstance(ensemble_weights, dict):
+                ensemble_weights = {}
+        except json.JSONDecodeError:
+            ensemble_weights = {}
+
         config: Dict[str, Any] = {
             "openai_key": scene.ai_openai_key,
             "anthropic_key": scene.ai_anthropic_key,
             "google_key": scene.ai_google_key,
             "priority": ["anthropic", "openai", "gemini"],
             "model": scene.ai_model,
+            "ensemble_enabled": scene.ai_ensemble_enabled,
+            "ensemble_weights": ensemble_weights,
+            "semantic_cache_enabled": scene.ai_semantic_cache_enabled,
+            "semantic_cache_threshold": scene.ai_semantic_cache_threshold,
+            "collab_enabled": scene.ai_collab_enabled,
+            "collab_user": scene.ai_collab_user,
+            "collab_project": scene.ai_collab_project,
+            "role": scene.ai_role,
+            "rate_limit": scene.ai_rate_limit,
+            "user": scene.ai_collab_user or "anonymous",
         }
         ai_agent = agent.IntelligentAgent(config, temperature=scene.ai_temperature, max_tokens=1200)
         try:
@@ -48,6 +70,15 @@ class BLENDER_AI_OT_generate_suggestions(bpy.types.Operator):
             return {"CANCELLED"}
 
         self.report({"INFO"}, f"Suggerimenti da {scene.ai_last_provider} (cached={scene.ai_last_cached})")
+
+        if scene.ai_collab_enabled:
+            collaboration.broadcast_if_enabled(
+                enabled=True,
+                suggestion=scene.ai_last_response,
+                author=scene.ai_collab_user,
+                project=scene.ai_collab_project,
+            )
+
         return {"FINISHED"}
 
 
