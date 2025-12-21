@@ -1,3 +1,24 @@
+"""BlenderAI - Intelligent AI Assistant for Blender
+
+Main entry point for the BlenderAI addon. Handles registration of all classes,
+scene properties, and module initialization for the Blender addon system.
+
+Features:
+    - Multi-AI provider support (Claude, GPT-4, Gemini) with intelligent fallback
+    - Scene analysis and intelligent suggestions
+    - Animation generation, asset management, and render optimization
+    - Advanced node graph visualization and performance monitoring
+
+Requirements:
+    - Blender 3.6+
+    - Python 3.10+
+    - API keys for at least one supported AI provider
+
+Author: leoron04
+Version: 1.0.0
+License: MIT
+"""
+
 bl_info = {
     "name": "BlenderAI - Intelligent Assistant",
     "blender": (3, 0, 0),
@@ -32,6 +53,15 @@ classes = (
 
 
 def register():
+        """Register all BlenderAI classes and scene properties.
+    
+    Called by Blender when the addon is enabled. Registers all operator classes,
+    panel classes, and initializes scene properties for API configuration.
+    
+    Returns:
+        None
+    """
+    
     for cls in classes:
         bpy.utils.register_class(cls)
 
@@ -65,6 +95,15 @@ def register():
 
 
 def unregister():
+        """Unregister all BlenderAI classes and clean up scene properties.
+    
+    Called by Blender when the addon is disabled. Unregisters all classes
+    in reverse order and removes all scene properties created during registration.
+    
+    Returns:
+        None
+    """
+    
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
 
