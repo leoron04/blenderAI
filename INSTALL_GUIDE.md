@@ -1,5 +1,7 @@
 # BlenderAI Installation Guide
 
+> ⚠️ Importante: la cartella dell’addon deve chiamarsi **esattamente `blenderAI`** (niente `-master`, `-1`, ecc.). Se vedi errori tipo `No module named blenderAI-1`, rinomina la cartella e riprova. Vedi anche `INSTALL_FIX_GUIDE.md` per la procedura rapida.
+
 ## Installation Methods
 
 ### Method 1: ZIP Installation (Recommended)
@@ -19,6 +21,7 @@ This is the standard Blender addon installation method.
    - Click "Install..." button
    - Select the downloaded `blenderAI-main.zip`
    - Click "Install Add-on from File"
+   - Se installi manualmente scompattando, assicurati che la cartella finale si chiami `blenderAI`
 
 3. **Enable the addon**
    - Search for "BlenderAI" in the add-ons search box

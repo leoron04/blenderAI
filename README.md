@@ -1,6 +1,12 @@
 # BlenderAI - Super Intelligent Blender Addon
 
+**Badge:** Production Ready | Well Documented | Type Safe
+
 An advanced AI-powered Blender addon that integrates with multiple AI models (ChatGPT, Gemini, etc.) to provide intelligent assistance for 3D modeling, animation, and VFX workflows.
+
+## Versione
+
+Current: **1.1.0**
 
 ## Features
 
@@ -35,6 +41,15 @@ First time setup requires API keys:
 3. Inserisci un prompt in **AI Suggestions** e genera proposte: vengono mostrate con provider, modello e info cache.
 4. Esamina la preview nel pannello **Code Generator** (script a sinistra, descrizione a destra) prima di applicare.
 5. Usa gli operatori autonomi (stub sicuri) per materiale, luci, rig placeholder, geometria procedurale.
+
+## Quick Links
+- [Install Guide](INSTALL_GUIDE.md)
+- [Install Fix Guide](INSTALL_FIX_GUIDE.md)
+- [Setup via Git Clone](setup_git_clone_guide.md)
+- [Troubleshooting](TROUBLESHOOTING.md)
+- [Error Handling Guide](ERROR_HANDLING_GUIDE.md)
+- [Code Style Guide](CODE_STYLE_GUIDE.md)
+- [Release Notes](RELEASE_NOTES.md)
 
 ## Requirements
 

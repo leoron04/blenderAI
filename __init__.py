@@ -9,19 +9,55 @@ bl_info = {
     "tracker_url": "https://github.com/leoron04/blenderAI/issues",
 }
 
+import os
+import sys
+import logging
+import traceback
 import bpy
-from . import config
-from . import operators
-from . import ui
 
+_logger = logging.getLogger("blenderAI.import")
+if not _logger.handlers:
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter("[blenderAI] %(message)s"))
+    _logger.addHandler(handler)
+_logger.setLevel(logging.INFO)
+
+def _debug(msg: str, *args) -> None:
+    if os.getenv("BLENDERAI_DEBUG", "0") == "1" or os.getenv("BLENDERAI_DEBUG_IMPORT", "0") == "1":
+        _logger.info(msg, *args)
+
+_debug("Add-on import start")
+_debug("Add-on __file__: %s", __file__)
+_debug("Current sys.path head: %s", sys.path[:5])
+_debug("Working dir: %s", os.getcwd())
+
+try:
+    from . import config
+    from . import operators
+    from . import ui
+    from . import node_graph_visualizer
+    from . import animation_generator
+    from . import asset_manager
+    from . import render_optimizer
+    from . import performance_monitor
+except Exception:  # noqa: BLE001
+    _logger.error("Errore durante l'import dei moduli BlenderAI:\n%s", traceback.format_exc())
+    raise
 
 classes = (
     *operators.classes,
     *ui.classes,
+    *node_graph_visualizer.classes,
+    *animation_generator.classes,
+    *asset_manager.classes,
+    *render_optimizer.classes,
+    *performance_monitor.classes,
 )
 
 
 def register():
+    _debug("Registering BlenderAI classes")
+    _debug("sys.path head: %s", sys.path[:5])
     for cls in classes:
         bpy.utils.register_class(cls)
 
@@ -45,9 +81,17 @@ def register():
     bpy.types.Scene.ai_scene_snapshot = bpy.props.StringProperty(name="Scene Snapshot", default="")
     bpy.types.Scene.ai_preview_code = bpy.props.StringProperty(name="Preview Code", default="")
     bpy.types.Scene.ai_preview_description = bpy.props.StringProperty(name="Preview Description", default="")
+    bpy.types.Scene.ai_node_graph = bpy.props.StringProperty(name="Node Graph", default="")
+    bpy.types.Scene.ai_node_suggestions = bpy.props.StringProperty(name="Node Suggestions", default="")
+    bpy.types.Scene.ai_asset_query = bpy.props.StringProperty(name="Asset Query", default="")
+    bpy.types.Scene.ai_asset_results = bpy.props.StringProperty(name="Asset Results", default="")
+    bpy.types.Scene.ai_render_report = bpy.props.StringProperty(name="Render Report", default="")
+    bpy.types.Scene.ai_batch_script = bpy.props.StringProperty(name="Batch Script", default="")
+    bpy.types.Scene.ai_perf_stats = bpy.props.StringProperty(name="Performance Stats", default="")
 
 
 def unregister():
+    _debug("Unregistering BlenderAI classes")
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
 
@@ -65,6 +109,13 @@ def unregister():
         "ai_scene_snapshot",
         "ai_preview_code",
         "ai_preview_description",
+        "ai_node_graph",
+        "ai_node_suggestions",
+        "ai_asset_query",
+        "ai_asset_results",
+        "ai_render_report",
+        "ai_batch_script",
+        "ai_perf_stats",
     ]
     for attr in attrs:
         if hasattr(bpy.types.Scene, attr):

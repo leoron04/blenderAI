@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any, Dict
+
 import bpy
 
 from . import agent
@@ -8,16 +10,26 @@ from . import utils
 
 
 class BLENDER_AI_OT_generate_suggestions(bpy.types.Operator):
-    """Genera suggerimenti usando la scena corrente."""
+    """Genera suggerimenti usando la scena corrente.
+
+    Args:
+        context: contesto Blender corrente.
+
+    Returns:
+        {'FINISHED'} o {'CANCELLED'} in base all'esito.
+    """
 
     bl_idname = "blender_ai.generate_suggestions"
     bl_label = "Generate AI Suggestions"
 
-    prompt: bpy.props.StringProperty(name="Prompt", default="Analizza la scena e proponi miglioramenti.")
+    prompt: bpy.props.StringProperty = bpy.props.StringProperty(
+        name="Prompt",
+        default="Analizza la scena e proponi miglioramenti.",
+    )
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> set[str]:
         scene = context.scene
-        config = {
+        config: Dict[str, Any] = {
             "openai_key": scene.ai_openai_key,
             "anthropic_key": scene.ai_anthropic_key,
             "google_key": scene.ai_google_key,
@@ -45,7 +57,7 @@ class BLENDER_AI_OT_analyze_scene(bpy.types.Operator):
     bl_idname = "blender_ai.analyze_scene"
     bl_label = "Analyze Scene"
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> set[str]:
         data = scene_analyzer.analyze_scene(context)
         context.scene.ai_scene_snapshot = utils.pretty_json(data)
         self.report({"INFO"}, "Analisi scena aggiornata")
@@ -58,10 +70,10 @@ class BLENDER_AI_OT_preview_code(bpy.types.Operator):
     bl_idname = "blender_ai.preview_code"
     bl_label = "Preview Code"
 
-    code: bpy.props.StringProperty(default="")
-    description: bpy.props.StringProperty(default="")
+    code: bpy.props.StringProperty = bpy.props.StringProperty(default="")
+    description: bpy.props.StringProperty = bpy.props.StringProperty(default="")
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> set[str]:
         scene = context.scene
         scene.ai_preview_code = self.code
         scene.ai_preview_description = self.description
@@ -75,7 +87,7 @@ class BLENDER_AI_OT_apply_preview(bpy.types.Operator):
     bl_idname = "blender_ai.apply_preview"
     bl_label = "Apply Preview"
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> set[str]:
         code = context.scene.ai_preview_code
         if not code:
             self.report({"WARNING"}, "Nessun codice in preview.")
@@ -86,36 +98,42 @@ class BLENDER_AI_OT_apply_preview(bpy.types.Operator):
 
 
 class BLENDER_AI_OT_auto_material(bpy.types.Operator):
+    """Crea materiale automatico (stub)."""
+
     bl_idname = "blender_ai.auto_material"
     bl_label = "Auto Material"
 
-    description: bpy.props.StringProperty(default="Materiale PBR semplice")
+    description: bpy.props.StringProperty = bpy.props.StringProperty(default="Materiale PBR semplice")
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> set[str]:
         self.report({"INFO"}, f"Auto-material stub: {self.description}")
         return {"FINISHED"}
 
 
 class BLENDER_AI_OT_auto_light(bpy.types.Operator):
+    """Crea setup luci rapido (stub)."""
+
     bl_idname = "blender_ai.auto_light"
     bl_label = "Auto Light Setup"
 
-    style: bpy.props.EnumProperty(
+    style: bpy.props.EnumProperty = bpy.props.EnumProperty(
         name="Lighting Style",
         items=[("THREE_POINT", "3-Point", ""), ("KEY_ONLY", "Key Light", "")],
         default="THREE_POINT",
     )
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> set[str]:
         self.report({"INFO"}, f"Setup luci '{self.style}' pronto (stub sicuro).")
         return {"FINISHED"}
 
 
 class BLENDER_AI_OT_auto_rig(bpy.types.Operator):
+    """Stub Auto Rig con hook futuro."""
+
     bl_idname = "blender_ai.auto_rig"
     bl_label = "Auto Rig (Stub)"
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> set[str]:
         agent_stub = agent.IntelligentAgent({}, temperature=0.0)
         context.scene.ai_preview_code = agent_stub.stub_auto_rig()
         context.scene.ai_preview_description = "Auto-rig placeholder. Nessuna modifica applicata."
@@ -124,12 +142,14 @@ class BLENDER_AI_OT_auto_rig(bpy.types.Operator):
 
 
 class BLENDER_AI_OT_auto_geometry(bpy.types.Operator):
+    """Stub procedurale geometry nodes."""
+
     bl_idname = "blender_ai.auto_geometry"
     bl_label = "Auto Geometry"
 
-    recipe: bpy.props.StringProperty(default="Crea un array di cubi in griglia 5x5")
+    recipe: bpy.props.StringProperty = bpy.props.StringProperty(default="Crea un array di cubi in griglia 5x5")
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> set[str]:
         context.scene.ai_preview_description = f"Procedura generativa: {self.recipe}"
         self.report({"INFO"}, "Procedura geometrica (stub) pronta.")
         return {"FINISHED"}
@@ -145,4 +165,3 @@ classes = (
     BLENDER_AI_OT_auto_rig,
     BLENDER_AI_OT_auto_geometry,
 )
-
