@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- Intelligent Agent v2: analisi scena avanzata, cache locale e fallback multi-provider (Claude > GPT-4 > Gemini).
+- Nuovi pannelli UI (Scene Inspector, AI Suggestions, Code Generator) con preview side-by-side codice + descrizione.
+- Operatori autonomi sicuri (stub) per materiali, illuminazione, geometria e auto-rig placeholder.
+- Logging e configurazione estesa (API keys multiple, temperature, modello prioritario).
+
 ## [1.0.0] - 2025-12-21
 
 ### Added

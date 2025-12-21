@@ -4,12 +4,11 @@ An advanced AI-powered Blender addon that integrates with multiple AI models (Ch
 
 ## Features
 
-- **AI-Assisted Modeling**: Get intelligent suggestions for 3D model generation
-- **Smart Scripting**: AI-powered Python script generation for Blender
-- **Animation Helper**: AI suggestions for keyframe placement and animation curves
-- **VFX Assistant**: Intelligent compositor node suggestions
-- **Real-time Chat Interface**: Integrated chat panel in Blender's UI
-- **Multi-Model Support**: Works with OpenAI, Google Gemini, and more
+- **Intelligent Agent System**: analisi completa della scena (oggetti, materiali, luci, camera, modifiers, nodi) e suggerimenti automatici.
+- **Multi-provider con fallback**: supporto per Claude ➜ GPT-4 ➜ Gemini con priorità configurabile e cache locale (~/.config/blender_ai/cache).
+- **Pannelli avanzati**: Scene Inspector, AI Suggestions, Code Generator con preview side-by-side (script + descrizione).
+- **Operatori autonomi (stub sicuri)**: auto-material, auto-light (3-point/key), auto-geometry, auto-rig placeholder con hook futuro.
+- **Preview & Safety**: validazione minima, preview codice prima di applicare, logging sintetico redatto.
 
 ## Installation
 
@@ -19,6 +18,9 @@ An advanced AI-powered Blender addon that integrates with multiple AI models (Ch
    - macOS: `~/Library/Application Support/Blender/version/scripts/addons`
    - Linux: `~/.config/blender/version/scripts/addons`
 3. Open Blender and enable the addon in Edit > Preferences > Add-ons
+4. Configura le API key nelle preferenze del pannello BlenderAI:
+   - OpenAI, Anthropic (Claude), Google Gemini
+   - Imposta temperature, modello e priorità fallback
 
 ## Configuration
 
@@ -28,16 +30,17 @@ First time setup requires API keys:
 
 ## Usage
 
-1. Open the Blender AI panel in the 3D View
-2. Select your task (Modeling, Animation, VFX, etc.)
-3. Chat with the AI for intelligent suggestions
-4. Apply generated code or models with one click
+1. Apri il pannello BlenderAI in 3D View.
+2. Premi **Analyze Scene** per popolare lo Scene Inspector.
+3. Inserisci un prompt in **AI Suggestions** e genera proposte: vengono mostrate con provider, modello e info cache.
+4. Esamina la preview nel pannello **Code Generator** (script a sinistra, descrizione a destra) prima di applicare.
+5. Usa gli operatori autonomi (stub sicuri) per materiale, luci, rig placeholder, geometria procedurale.
 
 ## Requirements
 
-- Blender 3.0+
+- Blender 3.6+
 - Python 3.10+
-- API key from at least one supported AI service
+- API key da almeno un provider supportato (Claude, GPT-4, Gemini)
 
 ## License
 

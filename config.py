@@ -156,28 +156,28 @@ class APIConfig:
         os.environ["GOOGLE_API_KEY"] = api_key
         return True
     
-    def get_available_models(self) -> List[Tuple[str, str]]:
+    def get_available_models(self) -> List[Tuple[str, str, str]]:
         """Get list of models with available API keys.
         
         Returns:
-            List of (model_id, model_name) tuples for models with configured API keys.
+            List of (model_id, model_name, description) tuples.
         """
         available = []
         
         if self.openai_api_key:
-            available.append(("gpt-4", "GPT-4"))
-            available.append(("gpt-3.5-turbo", "GPT-3.5 Turbo"))
+            available.append(("gpt-4", "GPT-4", "OpenAI GPT-4"))
+            available.append(("gpt-3.5-turbo", "GPT-3.5 Turbo", "OpenAI GPT-3.5"))
         
         if self.anthropic_api_key:
-            available.append(("claude-3-opus", "Claude 3 Opus"))
-            available.append(("claude-3-sonnet", "Claude 3 Sonnet"))
+            available.append(("claude-3-opus", "Claude 3 Opus", "Anthropic"))
+            available.append(("claude-3-sonnet", "Claude 3 Sonnet", "Anthropic"))
         
         if self.google_api_key:
-            available.append(("gemini-pro", "Gemini Pro"))
+            available.append(("gemini-pro", "Gemini Pro", "Google Gemini"))
         
         # Local models are always available
-        available.append(("llama-2-7b", "Llama 2 (Local)"))
-        available.append(("auto", "Auto Select (Recommended)"))
+        available.append(("llama-2-7b", "Llama 2 (Local)", "Offline"))
+        available.append(("auto", "Auto Select (Recommended)", "Selezione dinamica"))
         
         return available
     
