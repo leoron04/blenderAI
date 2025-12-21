@@ -1,0 +1,40 @@
+title: "How-To: breve descrizione"
+labels:
+  - question
+category: "Q&A"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Usa questo template per domande di utilizzo, configurazione o best practice.
+  - type: input
+    id: goal
+    attributes:
+      label: "Obiettivo"
+      description: "Cosa vuoi ottenere?"
+      placeholder: "Es. Generare materiale PBR con nodi procedurali"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: "Cosa hai già provato"
+      description: "Comandi, operatori, prompt o workaround tentati."
+      placeholder: "1) Ho usato il pannello AI Suggestions...\n2) Ho provato il codice di esempio..."
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: "Contesto tecnico"
+      description: "Versione Blender, addon, OS, GPU/CPU, eventuali errori o log."
+      placeholder: "Blender 3.6, addon 2.3.0, Ubuntu 22.04, RTX 3060."
+    validations:
+      required: true
+  - type: textarea
+    id: references
+    attributes:
+      label: "Riferimenti utili"
+      description: "Link a screenshot, video, docs o .blend di esempio."
+    validations:
+      required: false
