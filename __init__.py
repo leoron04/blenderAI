@@ -15,7 +15,7 @@ Requirements:
     - API keys for at least one supported AI provider
 
 Author: leoron04
-Version: 1.0.0
+Version: 2.3.0
 License: MIT
 """
 
@@ -23,7 +23,7 @@ bl_info = {
     "name": "BlenderAI - Intelligent Assistant",
     "blender": (3, 0, 0),
     "category": "Development",
-    "version": (1, 0, 0),
+    "version": (2, 3, 0),
     "author": "leoron04",
     "description": "AI-powered intelligent assistant for Blender with ChatGPT, Gemini, Claude integration",
     "wiki_url": "https://github.com/leoron04/blenderAI",
