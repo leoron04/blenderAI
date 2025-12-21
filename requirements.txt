@@ -28,3 +28,5 @@ pytest-cov>=4.0.0
 pytest-asyncio>=0.23.0
 black>=22.0.0
 flake8>=4.0.0
+bandit>=1.7.9
+safety>=3.2.4

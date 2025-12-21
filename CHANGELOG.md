@@ -1,5 +1,14 @@
 # Changelog
 
+## v2.2.0
+
+### 🔐 Security & Hardening
+- Nuovi guardrail di sicurezza (`security_hardening.py`) con sanificazione input, masking segreti, rate limiting per provider e validazione environment.
+- Provider AI con timeout espliciti, gestione errori senza esporre chiavi e limiti configurabili.
+- Validazione variabili d'ambiente in `config.py` e input UI/Operatori sanificati.
+- Linee guida aggiornate in `SECURITY_GUIDELINES.md` e requisiti di sicurezza (Bandit, Safety).
+- Suite test ampliata (`tests/test_security.py`) per controlli su segreti, rate limit e validazione env.
+
 ## v1.1.0
 
 ### ✨ New Features

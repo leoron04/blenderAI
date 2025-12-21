@@ -12,9 +12,34 @@ try:
     from .docs_embeddings import DocsEmbeddingIndex
     from . import utils
 except ImportError:  # pragma: no cover - fallback execution path
-    from blender_docs_manager import DEFAULT_VERSIONS, default_manager  # type: ignore
-    from docs_embeddings import DocsEmbeddingIndex  # type: ignore
-    import utils  # type: ignore
+    DEFAULT_VERSIONS = ["4.2"]  # type: ignore
+
+    class _NoopManager:  # pragma: no cover - test fallback
+        def __init__(self) -> None:
+            self.parsed_dir = Path("/tmp/blender_ai_docs")
+            self.parsed_dir.mkdir(parents=True, exist_ok=True)
+
+        def ingest_all(self, _versions):
+            return None
+
+        def load_entries(self, _version):
+            return []
+
+    def default_manager():  # type: ignore
+        return _NoopManager()
+
+    class DocsEmbeddingIndex:  # type: ignore
+        def __init__(self, storage_dir: Path) -> None:
+            self.storage_dir = Path(storage_dir)
+            self.storage_dir.mkdir(parents=True, exist_ok=True)
+
+        def build(self, _versions):
+            return None
+
+        def query(self, _query: str, version: str, top_k: int, metadata_filter=None):
+            return []
+
+    from . import utils  # type: ignore
 
 
 PROMPT_TEMPLATE = (

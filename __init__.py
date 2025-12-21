@@ -181,7 +181,7 @@ def register():
     )
     bpy.types.Scene.ai_collab_host = bpy.props.StringProperty(
         name="Collab Host",
-        default="0.0.0.0",
+        default="127.0.0.1",
     )
     bpy.types.Scene.ai_collab_port = bpy.props.IntProperty(
         name="Collab Port",
