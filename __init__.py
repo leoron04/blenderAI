@@ -30,6 +30,10 @@ bl_info = {
     "tracker_url": "https://github.com/leoron04/blenderAI/issues",
 }
 
+import os
+import sys
+import logging
+import traceback
 import bpy
 from . import config
 from . import operators
@@ -40,6 +44,34 @@ from . import asset_manager
 from . import render_optimizer
 from . import performance_monitor
 
+_logger = logging.getLogger("blenderAI.import")
+if not _logger.handlers:
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter("[blenderAI] %(message)s"))
+    _logger.addHandler(handler)
+_logger.setLevel(logging.INFO)
+
+def _debug(msg: str, *args) -> None:
+    if os.getenv("BLENDERAI_DEBUG", "0") == "1" or os.getenv("BLENDERAI_DEBUG_IMPORT", "0") == "1":
+        _logger.info(msg, *args)
+
+_debug("Add-on import start")
+_debug("Add-on __file__: %s", __file__)
+_debug("Current sys.path head: %s", sys.path[:5])
+_debug("Working dir: %s", os.getcwd())
+
+try:
+    from . import config
+    from . import operators
+    from . import ui
+    from . import node_graph_visualizer
+    from . import animation_generator
+    from . import asset_manager
+    from . import render_optimizer
+    from . import performance_monitor
+except Exception:  # noqa: BLE001
+    _logger.error("Errore durante l'import dei moduli BlenderAI:\n%s", traceback.format_exc())
+    raise
 
 classes = (
     *operators.classes,
@@ -53,6 +85,8 @@ classes = (
 
 
 def register():
+    _debug("Registering BlenderAI classes")
+    _debug("sys.path head: %s", sys.path[:5])
         """Register all BlenderAI classes and scene properties.
     
     Called by Blender when the addon is enabled. Registers all operator classes,
@@ -95,6 +129,7 @@ def register():
 
 
 def unregister():
+    _debug("Unregistering BlenderAI classes")
         """Unregister all BlenderAI classes and clean up scene properties.
     
     Called by Blender when the addon is disabled. Unregisters all classes

@@ -3,18 +3,21 @@ from __future__ import annotations
 import bpy
 
 from . import config
+from . import node_graph_visualizer
 from . import operators
 from . import node_graph_visualizer
 
 
 class BLENDER_AI_PT_main_panel(bpy.types.Panel):
+    """Pannello principale di controllo BlenderAI."""
+
     bl_label = "🤖 BlenderAI Agent"
     bl_idname = "BLENDER_AI_PT_main_panel"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "BlenderAI"
 
-    def draw(self, context):
+    def draw(self, context: bpy.types.Context) -> None:
         layout = self.layout
         scene = context.scene
 
@@ -27,6 +30,14 @@ class BLENDER_AI_PT_main_panel(bpy.types.Panel):
         col.prop(scene, "ai_temperature", slider=True)
         col.prop(scene, "ai_model")
 
+        box = layout.box()
+        box.label(text="💬 AI Suggestions", icon="WORDWRAP_ON")
+        col = box.column(align=True)
+        col.prop(scene, "ai_prompt", text="Prompt")
+        col.operator(operators.BLENDER_AI_OT_generate_suggestions.bl_idname, icon="PLAY")
+        col.label(text=f"Provider: {scene.ai_last_provider} | Model: {scene.ai_last_model} | Cache: {scene.ai_last_cached}")
+        col.prop(scene, "ai_last_response", text="Response")
+        col.operator("blender_ai.generate_animation", text="Generate Animation", icon="ANIM")
     box = layout.box()
     box.label(text="💬 AI Suggestions", icon="WORDWRAP_ON")
     col = box.column(align=True)
@@ -44,6 +55,8 @@ class BLENDER_AI_PT_main_panel(bpy.types.Panel):
 
 
 class BLENDER_AI_PT_code_panel(bpy.types.Panel):
+    """Pannello di anteprima codice AI."""
+
     bl_label = "🧠 Code Generator"
     bl_idname = "BLENDER_AI_PT_code_panel"
     bl_space_type = "VIEW_3D"
@@ -51,7 +64,7 @@ class BLENDER_AI_PT_code_panel(bpy.types.Panel):
     bl_category = "BlenderAI"
     bl_parent_id = "BLENDER_AI_PT_main_panel"
 
-    def draw(self, context):
+    def draw(self, context: bpy.types.Context) -> None:
         layout = self.layout
         scene = context.scene
         box = layout.box()
@@ -70,6 +83,8 @@ class BLENDER_AI_PT_code_panel(bpy.types.Panel):
 
 
 class BLENDER_AI_PT_actions_panel(bpy.types.Panel):
+    """Pannello azioni autonome stub."""
+
     bl_label = "🤖 Azioni Autonome"
     bl_idname = "BLENDER_AI_PT_actions_panel"
     bl_space_type = "VIEW_3D"
@@ -77,7 +92,7 @@ class BLENDER_AI_PT_actions_panel(bpy.types.Panel):
     bl_category = "BlenderAI"
     bl_parent_id = "BLENDER_AI_PT_main_panel"
 
-    def draw(self, context):
+    def draw(self, context: bpy.types.Context) -> None:
         layout = self.layout
         box = layout.box()
         box.label(text="Materiali", icon="MATERIAL")
