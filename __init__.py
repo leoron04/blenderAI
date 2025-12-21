@@ -34,7 +34,42 @@ import os
 import sys
 import logging
 import traceback
-import bpy
+
+try:  # pragma: no cover - handled in tests via mock
+    import bpy
+except ImportError:  # pragma: no cover - fallback for non-Blender env
+    import types
+
+    class _MockOperator:
+        bl_idname = ""
+        bl_label = ""
+
+        def report(self, *_args, **_kwargs):
+            return None
+
+    class _MockPanel:
+        def __init__(self):
+            self.layout = None
+
+    bpy = types.SimpleNamespace(
+        types=types.SimpleNamespace(
+            Operator=_MockOperator,
+            Panel=_MockPanel,
+            Scene=object,
+            Object=object,
+            Context=object,
+        ),
+        props=types.SimpleNamespace(
+            StringProperty=lambda **kwargs: kwargs.get("default", ""),
+            BoolProperty=lambda **kwargs: kwargs.get("default", False),
+            EnumProperty=lambda **kwargs: kwargs.get("default", None),
+            IntProperty=lambda **kwargs: kwargs.get("default", 0),
+            FloatProperty=lambda **kwargs: kwargs.get("default", 0.0),
+        ),
+        data=types.SimpleNamespace(materials=[], lights=[], cameras=[], collections=[]),
+        utils=types.SimpleNamespace(register_class=lambda cls: None, unregister_class=lambda cls: None),
+    )
+    sys.modules["bpy"] = bpy
 from . import config
 from . import operators
 from . import ui
@@ -91,15 +126,12 @@ classes = (
 def register():
     _debug("Registering BlenderAI classes")
     _debug("sys.path head: %s", sys.path[:5])
-        """Register all BlenderAI classes and scene properties.
-    
+    """Register all BlenderAI classes and scene properties.
+
     Called by Blender when the addon is enabled. Registers all operator classes,
     panel classes, and initializes scene properties for API configuration.
-    
-    Returns:
-        None
     """
-    
+
     for cls in classes:
         bpy.utils.register_class(cls)
 
@@ -210,15 +242,12 @@ def register():
 
 def unregister():
     _debug("Unregistering BlenderAI classes")
-        """Unregister all BlenderAI classes and clean up scene properties.
-    
+    """Unregister all BlenderAI classes and clean up scene properties.
+
     Called by Blender when the addon is disabled. Unregisters all classes
     in reverse order and removes all scene properties created during registration.
-    
-    Returns:
-        None
     """
-    
+
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
 
