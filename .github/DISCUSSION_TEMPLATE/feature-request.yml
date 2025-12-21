@@ -1,0 +1,57 @@
+title: "Feature Request: breve descrizione"
+labels:
+  - enhancement
+category: "General"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Grazie per aver proposto un miglioramento! Compila i campi per aiutarci a valutarlo rapidamente.
+  - type: input
+    id: summary
+    attributes:
+      label: "Sintesi"
+      description: "In una frase, qual è la feature richiesta?"
+      placeholder: "Es. Operatore per auto-rig dei personaggi low-poly"
+    validations:
+      required: true
+  - type: textarea
+    id: use-case
+    attributes:
+      label: "Caso d'uso"
+      description: "Spiega il problema o il workflow che la feature risolve."
+      placeholder: "Descrivi il contesto d'uso, perché serve e chi ne beneficia."
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: "Proposta"
+      description: "Dettaglia cosa dovrebbe fare la feature, idealmente in piccoli step."
+      placeholder: "Es. 1) Analizza rig; 2) Suggerisce correzioni; 3) Applica fix opzionali."
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "Alternative considerate"
+      description: "Soluzioni alternative o workaround già valutati."
+      placeholder: "Addon esistenti, script custom, operazioni manuali."
+    validations:
+      required: false
+  - type: textarea
+    id: impact
+    attributes:
+      label: "Impatto e priorità"
+      description: "Valuta impatto (prod, prototipo, ricerca) e urgenza."
+      placeholder: "Es. Migliora velocità di setup di 30% per il team layout."
+    validations:
+      required: false
+  - type: textarea
+    id: context
+    attributes:
+      label: "Contesto tecnico"
+      description: "Versione Blender, versione addon, OS, hardware rilevante."
+      placeholder: "Blender 4.0, addon 2.3.0, Windows 11, GPU RTX 4080."
+    validations:
+      required: false

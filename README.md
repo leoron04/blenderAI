@@ -1,5 +1,7 @@
 # BlenderAI - Super Intelligent Blender Addon
 
+[![GitHub Discussions](https://img.shields.io/github/discussions/leoron04/blenderAI?logo=github&label=Discussions)](https://github.com/leoron04/blenderAI/discussions)
+
 **Badge:** Production Ready | Well Documented | Type Safe
 
 An advanced AI-powered Blender addon that integrates with multiple AI models (ChatGPT, Gemini, etc.) to provide intelligent assistance for 3D modeling, animation, and VFX workflows.

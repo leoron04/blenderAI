@@ -1,0 +1,64 @@
+title: "Bug Report: breve descrizione"
+labels:
+  - bug
+category: "General"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Usa questo template per segnalare bug tramite Discussions. Per problemi bloccanti, apri anche una Issue usando il template ufficiale.
+  - type: input
+    id: summary
+    attributes:
+      label: "Sintesi"
+      description: "Titolo chiaro del problema."
+      placeholder: "Es. Crash su Analyze Scene con Blender 4.1"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: "Passi per riprodurre"
+      description: "Elenco numerato dei passi minimi per riprodurre il bug."
+      placeholder: "1) Apri scena X\n2) Avvia Analyze Scene\n3) Seleziona camera\n4) Crash"
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: "Comportamento atteso"
+      description: "Cosa doveva succedere."
+      placeholder: "La scena viene analizzata e vengono mostrati i suggerimenti."
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: "Comportamento effettivo"
+      description: "Cosa succede realmente, includendo messaggi d'errore."
+      placeholder: "Blender si chiude senza log aggiuntivi."
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: "Log e traceback"
+      description: "Incolla log/traceback o allega file (drag & drop)."
+      render: bash
+    validations:
+      required: false
+  - type: input
+    id: version
+    attributes:
+      label: "Versioni"
+      description: "Blender, addon, OS, GPU/CPU principali."
+      placeholder: "Blender 4.1, addon 2.3.0, macOS 14, M2 Pro."
+    validations:
+      required: true
+  - type: textarea
+    id: attachments
+    attributes:
+      label: "File di test"
+      description: "Link o allegati di .blend / asset minimi per riprodurre."
+    validations:
+      required: false
