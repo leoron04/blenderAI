@@ -67,7 +67,7 @@ class CollaborationHub:
         await self._site.start()
         logger.info("Collaboration server avviato su ws://%s:%s/ws", host, port)
 
-    def start(self, host: str = "0.0.0.0", port: int = 8765) -> None:
+    def start(self, host: str = "127.0.0.1", port: int = 8765) -> None:
         if self._thread and self._thread.is_alive():
             return
 
@@ -104,7 +104,7 @@ class CollaborationHub:
 hub = CollaborationHub()
 
 
-def ensure_started(enabled: bool, host: str = "0.0.0.0", port: int = 8765) -> None:
+def ensure_started(enabled: bool, host: str = "127.0.0.1", port: int = 8765) -> None:
     if enabled:
         hub.start(host, port)
 

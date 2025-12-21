@@ -10,6 +10,7 @@ from . import collaboration
 from . import scene_analyzer
 from . import utils
 from . import rag_system
+from . import security_hardening
 
 
 class BLENDER_AI_OT_generate_suggestions(bpy.types.Operator):
@@ -33,7 +34,23 @@ class BLENDER_AI_OT_generate_suggestions(bpy.types.Operator):
     def execute(self, context: bpy.types.Context) -> set[str]:
         scene = context.scene
 
-        collaboration.ensure_started(scene.ai_collab_enabled, host=scene.ai_collab_host, port=scene.ai_collab_port)
+        try:
+            prompt = security_hardening.sanitize_user_input(self.prompt, "Prompt", max_length=1200)
+            collab_host = security_hardening.sanitize_user_input(
+                scene.ai_collab_host, "Collab host", max_length=255, allow_empty=True
+            ) or "127.0.0.1"
+            collab_port = security_hardening.validate_port(scene.ai_collab_port, "Collab port")
+            collab_user = security_hardening.sanitize_user_input(
+                scene.ai_collab_user, "User", max_length=64, allow_empty=True
+            ) or "anonymous"
+            collab_project = security_hardening.sanitize_user_input(
+                scene.ai_collab_project, "Project", max_length=64, allow_empty=True
+            ) or "default"
+        except ValueError as exc:
+            self.report({"ERROR"}, str(exc))
+            return {"CANCELLED"}
+
+        collaboration.ensure_started(scene.ai_collab_enabled, host=collab_host, port=collab_port)
 
         try:
             ensemble_weights = json.loads(scene.ai_ensemble_weights) if scene.ai_ensemble_weights else {}
@@ -42,10 +59,14 @@ class BLENDER_AI_OT_generate_suggestions(bpy.types.Operator):
         except json.JSONDecodeError:
             ensemble_weights = {}
 
+        env_keys, env_errors = security_hardening.validate_environment()
+        for error in env_errors:
+            utils.log_message(error, level="WARNING")
+
         config: Dict[str, Any] = {
-            "openai_key": scene.ai_openai_key,
-            "anthropic_key": scene.ai_anthropic_key,
-            "google_key": scene.ai_google_key,
+            "openai_key": env_keys.get("openai_api_key", ""),
+            "anthropic_key": env_keys.get("anthropic_api_key", ""),
+            "google_key": env_keys.get("google_api_key", ""),
             "priority": ["anthropic", "openai", "gemini"],
             "model": scene.ai_model,
             "blender_version": scene.ai_blender_version,
@@ -54,26 +75,34 @@ class BLENDER_AI_OT_generate_suggestions(bpy.types.Operator):
             "semantic_cache_enabled": scene.ai_semantic_cache_enabled,
             "semantic_cache_threshold": scene.ai_semantic_cache_threshold,
             "collab_enabled": scene.ai_collab_enabled,
-            "collab_user": scene.ai_collab_user,
-            "collab_project": scene.ai_collab_project,
+            "collab_user": collab_user,
+            "collab_project": collab_project,
             "role": scene.ai_role,
             "rate_limit": scene.ai_rate_limit,
-            "user": scene.ai_collab_user or "anonymous",
+            "user": collab_user,
+            "request_timeout": 45,
+            "openai_rate_limit": scene.ai_rate_limit,
+            "openai_rate_window": 3600,
+            "anthropic_rate_limit": scene.ai_rate_limit,
+            "anthropic_rate_window": 3600,
+            "gemini_rate_limit": scene.ai_rate_limit,
+            "gemini_rate_window": 3600,
         }
         ai_agent = agent.IntelligentAgent(config, temperature=scene.ai_temperature, max_tokens=1200)
         try:
             rag = rag_system.default_rag()
-            scene.ai_doc_context = rag.context_as_text(self.prompt, version=scene.ai_blender_version, top_k=5)
+            scene.ai_doc_context = rag.context_as_text(prompt, version=scene.ai_blender_version, top_k=5)
             scene.ai_doc_hints = utils.pretty_json(
                 scene_analyzer.doc_hints_for_scene(context, version=scene.ai_blender_version)
             )
-            response = ai_agent.suggest(context, self.prompt)
+            response = ai_agent.suggest(context, prompt)
             scene.ai_last_response = utils.format_response(response.content, limit=3000)
             scene.ai_last_provider = response.provider
             scene.ai_last_model = response.model
             scene.ai_last_cached = response.cached
         except Exception as exc:  # noqa: BLE001
-            self.report({"ERROR"}, f"AI error: {exc}")
+            safe_error = security_hardening.ensure_safe_message(str(exc), secrets=[])
+            self.report({"ERROR"}, f"AI error: {safe_error}")
             return {"CANCELLED"}
 
         self.report({"INFO"}, f"Suggerimenti da {scene.ai_last_provider} (cached={scene.ai_last_cached})")

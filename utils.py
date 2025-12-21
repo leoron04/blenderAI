@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import json
 import logging
-from typing import Any, Callable
+import re
+from typing import Any, Callable, Iterable
 
 
 logger = logging.getLogger("blender_ai")
@@ -16,9 +17,14 @@ if not logger.handlers:
 logger.setLevel(logging.INFO)
 
 
+API_KEY_PATTERN = re.compile(r"^[A-Za-z0-9._-]{12,}$")
+
+
 def validate_api_key(api_key: str) -> bool:
     """Validate API key format."""
     if not api_key or len(api_key) < 10:
+        return False
+    if bool(API_KEY_PATTERN.match(api_key)) is False:
         return False
     return True
 
@@ -30,9 +36,14 @@ def format_response(response: Any, limit: int = 800) -> str:
     return str(response)
 
 
-def log_message(message: str, level: str = "INFO") -> None:
-    """Log messages for debugging."""
-    getattr(logger, level.lower(), logger.info)(message)
+def log_message(message: str, level: str = "INFO", secrets: Iterable[str] | None = None) -> None:
+    """Log messages for debugging with optional secret redaction."""
+    redacted = message
+    if secrets:
+        for secret in secrets:
+            if secret:
+                redacted = redacted.replace(secret, "***")
+    getattr(logger, level.lower(), logger.info)(redacted)
 
 
 def safe_execute(func: Callable, *args, **kwargs):
@@ -47,6 +58,8 @@ def safe_execute(func: Callable, *args, **kwargs):
 def truncate_secret(value: str, keep: int = 4) -> str:
     if not value:
         return ""
+    if len(value) <= keep * 2:
+        return "***"
     return f"{value[:keep]}...{value[-keep:]}"
 
 

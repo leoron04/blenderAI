@@ -9,6 +9,9 @@ from enum import Enum
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 
+from . import security_hardening
+from . import utils
+
 
 class AIModel(Enum):
     """Available AI models with metadata."""
@@ -126,11 +129,24 @@ class APIConfig:
     
     def __init__(self):
         """Initialize API configuration from environment or defaults."""
-        self.openai_api_key = os.getenv("OPENAI_API_KEY", "")
-        self.anthropic_api_key = os.getenv("ANTHROPIC_API_KEY", "")
-        self.google_api_key = os.getenv("GOOGLE_API_KEY", "")
+        env_config, errors = security_hardening.validate_environment()
+        self.validation_errors = errors
+        self.openai_api_key = env_config.get("openai_api_key", "")
+        self.anthropic_api_key = env_config.get("anthropic_api_key", "")
+        self.google_api_key = env_config.get("google_api_key", "")
         self.selected_model = os.getenv("BLENDER_AI_MODEL", "auto")
         self.auto_mode_enabled = os.getenv("BLENDER_AI_AUTO_MODE", "true").lower() == "true"
+        self._assert_env_only()
+
+    def _assert_env_only(self) -> None:
+        """Ensure keys are sourced from environment and meet minimal validation."""
+        for name, value in [
+            ("OPENAI_API_KEY", self.openai_api_key),
+            ("ANTHROPIC_API_KEY", self.anthropic_api_key),
+            ("GOOGLE_API_KEY", self.google_api_key),
+        ]:
+            if value and not utils.validate_api_key(value):
+                self.validation_errors.append(f"{name} non valida o formattazione errata.")
     
     def set_openai_key(self, api_key: str) -> bool:
         """Set OpenAI API key."""
@@ -249,6 +265,10 @@ class APIConfig:
     def is_configured(self) -> bool:
         """Check if at least one API is configured."""
         return bool(self.openai_api_key or self.anthropic_api_key or self.google_api_key)
+
+    def validate_environment(self) -> List[str]:
+        """Return environment validation errors without leaking secrets."""
+        return list(self.validation_errors)
 
 
 # Global configuration instance
