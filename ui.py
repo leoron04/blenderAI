@@ -4,6 +4,7 @@ import bpy
 
 from . import config
 from . import operators
+from . import node_graph_visualizer
 
 
 class BLENDER_AI_PT_main_panel(bpy.types.Panel):
@@ -26,13 +27,14 @@ class BLENDER_AI_PT_main_panel(bpy.types.Panel):
         col.prop(scene, "ai_temperature", slider=True)
         col.prop(scene, "ai_model")
 
-        box = layout.box()
-        box.label(text="💬 AI Suggestions", icon="WORDWRAP_ON")
-        col = box.column(align=True)
-        col.prop(scene, "ai_prompt", text="Prompt")
-        col.operator(operators.BLENDER_AI_OT_generate_suggestions.bl_idname, icon="PLAY")
-        col.label(text=f"Provider: {scene.ai_last_provider} | Model: {scene.ai_last_model} | Cache: {scene.ai_last_cached}")
-        col.prop(scene, "ai_last_response", text="Response")
+    box = layout.box()
+    box.label(text="💬 AI Suggestions", icon="WORDWRAP_ON")
+    col = box.column(align=True)
+    col.prop(scene, "ai_prompt", text="Prompt")
+    col.operator(operators.BLENDER_AI_OT_generate_suggestions.bl_idname, icon="PLAY")
+    col.label(text=f"Provider: {scene.ai_last_provider} | Model: {scene.ai_last_model} | Cache: {scene.ai_last_cached}")
+    col.prop(scene, "ai_last_response", text="Response")
+    col.operator("blender_ai.generate_animation", text="Generate Animation", icon="ANIM")
 
         box = layout.box()
         box.label(text="👁 Scene Inspector", icon="SCENE_DATA")
@@ -101,5 +103,5 @@ classes = (
     BLENDER_AI_PT_main_panel,
     BLENDER_AI_PT_code_panel,
     BLENDER_AI_PT_actions_panel,
+    *node_graph_visualizer.classes,
 )
-
