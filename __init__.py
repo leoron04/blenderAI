@@ -13,11 +13,21 @@ import bpy
 from . import config
 from . import operators
 from . import ui
+from . import node_graph_visualizer
+from . import animation_generator
+from . import asset_manager
+from . import render_optimizer
+from . import performance_monitor
 
 
 classes = (
     *operators.classes,
     *ui.classes,
+    *node_graph_visualizer.classes,
+    *animation_generator.classes,
+    *asset_manager.classes,
+    *render_optimizer.classes,
+    *performance_monitor.classes,
 )
 
 
@@ -45,6 +55,13 @@ def register():
     bpy.types.Scene.ai_scene_snapshot = bpy.props.StringProperty(name="Scene Snapshot", default="")
     bpy.types.Scene.ai_preview_code = bpy.props.StringProperty(name="Preview Code", default="")
     bpy.types.Scene.ai_preview_description = bpy.props.StringProperty(name="Preview Description", default="")
+    bpy.types.Scene.ai_node_graph = bpy.props.StringProperty(name="Node Graph", default="")
+    bpy.types.Scene.ai_node_suggestions = bpy.props.StringProperty(name="Node Suggestions", default="")
+    bpy.types.Scene.ai_asset_query = bpy.props.StringProperty(name="Asset Query", default="")
+    bpy.types.Scene.ai_asset_results = bpy.props.StringProperty(name="Asset Results", default="")
+    bpy.types.Scene.ai_render_report = bpy.props.StringProperty(name="Render Report", default="")
+    bpy.types.Scene.ai_batch_script = bpy.props.StringProperty(name="Batch Script", default="")
+    bpy.types.Scene.ai_perf_stats = bpy.props.StringProperty(name="Performance Stats", default="")
 
 
 def unregister():
@@ -65,6 +82,13 @@ def unregister():
         "ai_scene_snapshot",
         "ai_preview_code",
         "ai_preview_description",
+        "ai_node_graph",
+        "ai_node_suggestions",
+        "ai_asset_query",
+        "ai_asset_results",
+        "ai_render_report",
+        "ai_batch_script",
+        "ai_perf_stats",
     ]
     for attr in attrs:
         if hasattr(bpy.types.Scene, attr):
