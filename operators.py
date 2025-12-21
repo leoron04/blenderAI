@@ -9,6 +9,7 @@ from . import agent
 from . import collaboration
 from . import scene_analyzer
 from . import utils
+from . import rag_system
 
 
 class BLENDER_AI_OT_generate_suggestions(bpy.types.Operator):
@@ -47,6 +48,7 @@ class BLENDER_AI_OT_generate_suggestions(bpy.types.Operator):
             "google_key": scene.ai_google_key,
             "priority": ["anthropic", "openai", "gemini"],
             "model": scene.ai_model,
+            "blender_version": scene.ai_blender_version,
             "ensemble_enabled": scene.ai_ensemble_enabled,
             "ensemble_weights": ensemble_weights,
             "semantic_cache_enabled": scene.ai_semantic_cache_enabled,
@@ -60,6 +62,11 @@ class BLENDER_AI_OT_generate_suggestions(bpy.types.Operator):
         }
         ai_agent = agent.IntelligentAgent(config, temperature=scene.ai_temperature, max_tokens=1200)
         try:
+            rag = rag_system.default_rag()
+            scene.ai_doc_context = rag.context_as_text(self.prompt, version=scene.ai_blender_version, top_k=5)
+            scene.ai_doc_hints = utils.pretty_json(
+                scene_analyzer.doc_hints_for_scene(context, version=scene.ai_blender_version)
+            )
             response = ai_agent.suggest(context, self.prompt)
             scene.ai_last_response = utils.format_response(response.content, limit=3000)
             scene.ai_last_provider = response.provider

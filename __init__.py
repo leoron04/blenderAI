@@ -108,6 +108,11 @@ def register():
         items=model_items if model_items else [("auto", "Auto Select", "")],
         default="auto" if ("auto", "Auto Select", "") in model_items else "gpt-4",
     )
+    bpy.types.Scene.ai_blender_version = bpy.props.StringProperty(
+        name="Blender Version",
+        description="Versione target Blender per il recupero documentazione",
+        default="4.2",
+    )
 
     bpy.types.Scene.ai_openai_key = bpy.props.StringProperty(name="OpenAI API Key", default="", subtype="PASSWORD")
     bpy.types.Scene.ai_anthropic_key = bpy.props.StringProperty(name="Anthropic API Key", default="", subtype="PASSWORD")
@@ -177,6 +182,16 @@ def register():
     bpy.types.Scene.ai_last_model = bpy.props.StringProperty(name="Last Model", default="")
     bpy.types.Scene.ai_last_cached = bpy.props.BoolProperty(name="Cached", default=False)
     bpy.types.Scene.ai_scene_snapshot = bpy.props.StringProperty(name="Scene Snapshot", default="")
+    bpy.types.Scene.ai_doc_context = bpy.props.StringProperty(
+        name="Doc Context",
+        description="Contesto documentazione Blender recuperato via RAG",
+        default="",
+    )
+    bpy.types.Scene.ai_doc_hints = bpy.props.StringProperty(
+        name="Doc Hints",
+        description="Suggerimenti documentazione basati sulla scena",
+        default="",
+    )
     bpy.types.Scene.ai_preview_code = bpy.props.StringProperty(name="Preview Code", default="")
     bpy.types.Scene.ai_preview_description = bpy.props.StringProperty(name="Preview Description", default="")
     bpy.types.Scene.ai_node_graph = bpy.props.StringProperty(name="Node Graph", default="")
@@ -209,9 +224,11 @@ def unregister():
 
     attrs = [
         "ai_model",
+        "ai_blender_version",
         "ai_openai_key",
         "ai_anthropic_key",
         "ai_google_key",
+        "ai_blender_version",
         "ai_temperature",
         "ai_ensemble_enabled",
         "ai_ensemble_weights",
@@ -230,6 +247,8 @@ def unregister():
         "ai_last_model",
         "ai_last_cached",
         "ai_scene_snapshot",
+        "ai_doc_context",
+        "ai_doc_hints",
         "ai_preview_code",
         "ai_preview_description",
         "ai_node_graph",

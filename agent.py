@@ -12,6 +12,7 @@ from . import scene_analyzer
 from . import semantic_cache
 from . import utils
 from . import enterprise
+from . import rag_system
 
 
 class IntelligentAgent:
@@ -23,12 +24,13 @@ class IntelligentAgent:
         self.max_tokens = max_tokens
         self.last_scene_fingerprint: Optional[str] = None
 
-    def _system_prompt(self, scene_payload: Dict) -> str:
+    def _system_prompt(self, scene_payload: Dict, doc_context: str = "") -> str:
         return (
             "Sei un assistente Blender senior. "
             "Analizza i dati scena forniti, proponi azioni sicure e uno script Python per Blender. "
             "Rispetta: NON applicare modifiche distruttive senza conferma. "
             "Rispondi in JSON con campi: description, script, actions[]."
+            f"\n\nDocumentazione Blender rilevante:\n{doc_context}"
             f"\n\nScene:\n{json.dumps(scene_payload, indent=2)}"
         )
 
@@ -85,6 +87,14 @@ class IntelligentAgent:
                 enterprise.audit_logger.log(user, "suggestion", response.provider, response.cached, project)
                 return response
 
+        doc_version = self.config.get("doc_version", self.config.get("blender_version", "4.2"))
+        doc_context = ""
+        try:
+            rag = rag_system.default_rag()
+            doc_context = rag.context_as_text(user_prompt, version=doc_version, top_k=5)
+        except Exception as exc:  # noqa: BLE001
+            utils.log_message(f"RAG context non disponibile: {exc}", level="WARNING")
+
         providers = ai_providers.build_provider_chain(
             {
                 "anthropic": self.config.get("anthropic_key", ""),
@@ -97,7 +107,7 @@ class IntelligentAgent:
             priority=self.config.get("priority", ["anthropic", "openai", "gemini"]),
         )
 
-        system_prompt = self._system_prompt(scene_payload)
+        system_prompt = self._system_prompt(scene_payload, doc_context=doc_context)
 
         if ensemble_enabled:
             ensemble_cfg = ensemble.EnsembleConfig(

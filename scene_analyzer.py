@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Dict, List, Optional
 
 import bpy
+
+from . import rag_system
 
 
 def fingerprint_scene(scene: bpy.types.Scene) -> str:
@@ -60,3 +62,24 @@ def analyze_scene(context) -> Dict[str, Any]:
 
     return data
 
+
+def doc_hints_for_scene(context, version: Optional[str] = None, limit: int = 3) -> List[Dict[str, str]]:
+    """Recupera hint documentazione basati sugli oggetti presenti."""
+    rag = rag_system.default_rag()
+    queries = []
+    for obj in context.scene.objects:
+        queries.append(f"Blender {obj.type} object modifiers and API usage")
+    if not queries:
+        return []
+    hints: List[Dict[str, str]] = []
+    for query in queries[:limit]:
+        for record in rag.retrieve(query, version=version or rag.default_version, top_k=1):
+            hints.append(
+                {
+                    "query": query,
+                    "name": record.metadata.get("name", "unknown"),
+                    "text": record.text,
+                    "meta": str(record.metadata),
+                }
+            )
+    return hints
