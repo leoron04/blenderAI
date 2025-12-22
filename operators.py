@@ -136,9 +136,10 @@ class BLENDER_AI_OT_preview_code(bpy.types.Operator):
 
     bl_idname = "blender_ai.preview_code"
     bl_label = "Preview Code"
+    bl_description = "Preview the generated code"
 
     code: bpy.props.StringProperty = bpy.props.StringProperty(default="")
-    description: bpy.props.StringProperty = bpy.props.StringProperty(default="")
+    description: str = ""
 
     def execute(self, context: bpy.types.Context) -> set[str]:
         scene = context.scene
