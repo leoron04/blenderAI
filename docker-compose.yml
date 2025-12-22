@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+  blenderai:
+    build: .
+    container_name: blenderai-api
+    ports:
+      - "8000:8000"
+    environment:
+      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+      ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"
+      GOOGLE_API_KEY: "${GOOGLE_API_KEY:-}"
+      BLENDER_AI_HOST: "0.0.0.0"
+      BLENDER_AI_PORT: "8000"
+      BLENDER_AI_MODEL: "${BLENDER_AI_MODEL:-auto}"
+      BLENDER_AI_ROLE: "${BLENDER_AI_ROLE:-creator}"
+      BLENDER_AI_USER: "${BLENDER_AI_USER:-docker}"
+      BLENDER_AI_PROJECT: "${BLENDER_AI_PROJECT:-container}"
+      BLENDER_AI_PRIORITY: "${BLENDER_AI_PRIORITY:-anthropic,openai,gemini}"
+      BLENDER_AI_ENSEMBLE: "${BLENDER_AI_ENSEMBLE:-false}"
+      BLENDER_AI_SEMANTIC_CACHE: "${BLENDER_AI_SEMANTIC_CACHE:-false}"
+      RUN_MIGRATIONS: "${RUN_MIGRATIONS:-0}"
+      DATABASE_URL: "${DATABASE_URL:-postgresql://blenderai:blenderai@db:5432/blenderai}"
+    volumes:
+      - ./config:/app/blenderAI/config
+      - ./data:/app/blenderAI/data
+      - ./logs:/app/blenderAI/logs
+  db:
+    image: postgres:15
+    container_name: blenderai-postgres
+    profiles: ["postgres"]
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: blenderai
+      POSTGRES_PASSWORD: blenderai
+      POSTGRES_DB: blenderai
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U blenderai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db_data:
