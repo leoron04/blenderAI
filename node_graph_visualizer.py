@@ -1,5 +1,6 @@
 """Advanced Node Graph Integration with AI optimization."""
 from __future__ import annotations
+from datetime import datetime
 from typing import Dict, List, Tuple, Optional, Any
 import bpy
 import json
@@ -88,7 +89,7 @@ class NodeGraphAnalyzer:
     def build_full_analysis(self) -> Dict[str, Any]:
         """Build complete node graph analysis for all materials."""
         analysis = {
-            "timestamp": str(Path.home()),
+            "timestamp": datetime.now().isoformat(),
             "total_materials": len(self.materials),
             "materials": {},
             "overall_suggestions": []

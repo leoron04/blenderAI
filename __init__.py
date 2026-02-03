@@ -6,8 +6,14 @@ scene properties, and module initialization for the Blender addon system.
 Features:
     - Multi-AI provider support (Claude, GPT-4, Gemini) with intelligent fallback
     - Scene analysis and intelligent suggestions
+    - Real PBR material generation (13 presets: metals, glass, skin, etc.)
+    - Professional lighting setups (3-point, Rembrandt, Studio, Dramatic, etc.)
+    - Auto-rigging (biped, quadruped, simple spine)
+    - Procedural geometry with Geometry Nodes (grid, scatter, circular, spiral, wave)
+    - Safe code preview and execution with security validation
     - Animation generation, asset management, and render optimization
     - Advanced node graph visualization and performance monitoring
+    - TF-IDF semantic caching with user preference learning
 
 Requirements:
     - Blender 3.6+
@@ -15,17 +21,17 @@ Requirements:
     - API keys for at least one supported AI provider
 
 Author: leoron04
-Version: 2.3.0
+Version: 2.4.0
 License: MIT
 """
 
 bl_info = {
     "name": "BlenderAI - Intelligent Assistant",
-    "blender": (3, 0, 0),
+    "blender": (3, 6, 0),
     "category": "Development",
-    "version": (2, 3, 0),
+    "version": (2, 4, 0),
     "author": "leoron04",
-    "description": "AI-powered intelligent assistant for Blender with ChatGPT, Gemini, Claude integration",
+    "description": "AI-powered assistant with real PBR materials, professional lighting, auto-rigging, and Geometry Nodes",
     "wiki_url": "https://github.com/leoron04/blenderAI",
     "tracker_url": "https://github.com/leoron04/blenderAI/issues",
 }
@@ -70,16 +76,6 @@ except ImportError:  # pragma: no cover - fallback for non-Blender env
         utils=types.SimpleNamespace(register_class=lambda cls: None, unregister_class=lambda cls: None),
     )
     sys.modules["bpy"] = bpy
-from . import config
-from . import operators
-from . import ui
-from . import node_graph_visualizer
-from . import animation_generator
-from . import asset_manager
-from . import render_optimizer
-from . import performance_monitor
-from . import visualization
-from . import enterprise
 
 _logger = logging.getLogger("blenderAI.import")
 if not _logger.handlers:
@@ -106,6 +102,8 @@ try:
     from . import asset_manager
     from . import render_optimizer
     from . import performance_monitor
+    from . import visualization
+    from . import enterprise
 except Exception:  # noqa: BLE001
     _logger.error("Errore durante l'import dei moduli BlenderAI:\n%s", traceback.format_exc())
     raise
@@ -124,13 +122,13 @@ classes = (
 
 
 def register():
-    _debug("Registering BlenderAI classes")
-    _debug("sys.path head: %s", sys.path[:5])
     """Register all BlenderAI classes and scene properties.
 
     Called by Blender when the addon is enabled. Registers all operator classes,
     panel classes, and initializes scene properties for API configuration.
     """
+    _debug("Registering BlenderAI classes")
+    _debug("sys.path head: %s", sys.path[:5])
 
     for cls in classes:
         bpy.utils.register_class(cls)
@@ -241,12 +239,12 @@ def register():
 
 
 def unregister():
-    _debug("Unregistering BlenderAI classes")
     """Unregister all BlenderAI classes and clean up scene properties.
 
     Called by Blender when the addon is disabled. Unregisters all classes
     in reverse order and removes all scene properties created during registration.
     """
+    _debug("Unregistering BlenderAI classes")
 
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
