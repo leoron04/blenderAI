@@ -14,14 +14,18 @@ Features:
     - Animation generation, asset management, and render optimization
     - Advanced node graph visualization and performance monitoring
     - TF-IDF semantic caching with user preference learning
+    - Procedural textures (12 presets: wood, marble, rust, brick, etc.)
+    - Render presets (product shot, turntable, portrait, architectural, etc.)
+    - Batch operations for multiple objects
+    - AI Agent Controller with Gemini for natural language commands
 
 Requirements:
     - Blender 3.6+
     - Python 3.10+
-    - API keys for at least one supported AI provider
+    - API keys for at least one supported AI provider (Gemini required for AI Agent)
 
 Author: leoron04
-Version: 2.4.0
+Version: 2.5.0
 License: MIT
 """
 
@@ -29,7 +33,7 @@ bl_info = {
     "name": "BlenderAI - Intelligent Assistant",
     "blender": (3, 6, 0),
     "category": "Development",
-    "version": (2, 4, 0),
+    "version": (2, 5, 0),
     "author": "leoron04",
     "description": "AI-powered assistant with real PBR materials, professional lighting, auto-rigging, and Geometry Nodes",
     "wiki_url": "https://github.com/leoron04/blenderAI",
@@ -104,6 +108,10 @@ try:
     from . import performance_monitor
     from . import visualization
     from . import enterprise
+    from . import procedural_textures
+    from . import render_presets
+    from . import batch_operations
+    from . import ai_agent_controller
 except Exception:  # noqa: BLE001
     _logger.error("Errore durante l'import dei moduli BlenderAI:\n%s", traceback.format_exc())
     raise
@@ -118,6 +126,10 @@ classes = (
     *performance_monitor.classes,
     *visualization.classes,
     *enterprise.classes,
+    *procedural_textures.classes,
+    *render_presets.classes,
+    *batch_operations.classes,
+    *ai_agent_controller.classes,
 )
 
 
@@ -237,6 +249,28 @@ def register():
     bpy.types.Scene.ai_usage_analytics = bpy.props.StringProperty(name="Usage Analytics", default="")
     bpy.types.Scene.ai_export_path = bpy.props.StringProperty(name="Export Path", default="")
 
+    # AI Agent Controller properties
+    bpy.types.Scene.ai_agent_input = bpy.props.StringProperty(
+        name="Agent Input",
+        description="Natural language command for AI Agent",
+        default="",
+    )
+    bpy.types.Scene.ai_agent_response = bpy.props.StringProperty(
+        name="Agent Response",
+        description="Last response from AI Agent",
+        default="",
+    )
+    bpy.types.Scene.ai_agent_history = bpy.props.StringProperty(
+        name="Agent History",
+        description="JSON conversation history",
+        default="[]",
+    )
+    bpy.types.Scene.ai_agent_auto_execute = bpy.props.BoolProperty(
+        name="Auto Execute",
+        description="Automatically execute AI-generated commands",
+        default=False,
+    )
+
 
 def unregister():
     """Unregister all BlenderAI classes and clean up scene properties.
@@ -290,6 +324,10 @@ def unregister():
         "ai_node_heatmap",
         "ai_usage_analytics",
         "ai_export_path",
+        "ai_agent_input",
+        "ai_agent_response",
+        "ai_agent_history",
+        "ai_agent_auto_execute",
     ]
     for attr in attrs:
         if hasattr(bpy.types.Scene, attr):
