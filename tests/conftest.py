@@ -75,6 +75,55 @@ class FakeLayout:
 
 
 @dataclass
+class FakeEditBone:
+    name: str = ""
+    head: tuple = (0.0, 0.0, 0.0)
+    tail: tuple = (0.0, 0.0, 1.0)
+    parent: "FakeEditBone | None" = None
+    use_connect: bool = False
+
+
+class FakeEditBonesCollection:
+    def __init__(self):
+        self._bones: List[FakeEditBone] = []
+
+    def new(self, name: str) -> FakeEditBone:
+        bone = FakeEditBone(name=name)
+        self._bones.append(bone)
+        return bone
+
+    def __iter__(self):
+        return iter(self._bones)
+
+
+@dataclass
+class FakeArmature:
+    name: str = "Armature"
+    edit_bones: FakeEditBonesCollection = field(default_factory=FakeEditBonesCollection)
+
+
+class FakeArmaturesCollection:
+    def __init__(self):
+        self._armatures: List[FakeArmature] = []
+
+    def new(self, name: str) -> FakeArmature:
+        armature = FakeArmature(name=name)
+        self._armatures.append(armature)
+        return armature
+
+
+class FakeObjectsCollection:
+    def __init__(self):
+        self._objects: List[FakeObject] = []
+
+    def new(self, name: str, object_data=None) -> "FakeObject":
+        obj = FakeObject(name=name, obj_type="ARMATURE" if isinstance(object_data, FakeArmature) else "MESH")
+        obj.data = object_data
+        self._objects.append(obj)
+        return obj
+
+
+@dataclass
 class FakeMaterial:
     name: str
     use_nodes: bool = False
@@ -116,12 +165,29 @@ class FakeData:
         self.lights: list[str] = ["Key"]
         self.cameras: list[str] = ["Cam"]
         self.collections: list[str] = ["Collection"]
+        self.armatures = FakeArmaturesCollection()
+        self.objects = FakeObjectsCollection()
+
+
+class FakeViewLayer:
+    def __init__(self):
+        self.objects = types.SimpleNamespace(active=None)
+
+
+class FakeSceneCollection:
+    def __init__(self):
+        self._objects: List[FakeObject] = []
+        self.objects = self
+
+    def link(self, obj):
+        self._objects.append(obj)
 
 
 class FakeContext:
     def __init__(self, scene, active_object=None):
         self.scene = scene
         self.active_object = active_object
+        self.view_layer = FakeViewLayer()
 
 
 class FakeRender:
@@ -142,6 +208,7 @@ class FakeScene:
         self.render = FakeRender()
         self.cycles = types.SimpleNamespace(samples=64)
         self.frame_end = 1
+        self.collection = FakeSceneCollection()
         # Default addon properties commonly read/written by operators
         self.ai_openai_key = ""
         self.ai_anthropic_key = ""
@@ -208,6 +275,19 @@ def _install_fake_bpy():
     )
     module.data = FakeData()
     module.utils = types.SimpleNamespace(register_class=lambda cls: None, unregister_class=lambda cls: None)
+    module.ops = types.SimpleNamespace(
+        object=types.SimpleNamespace(
+            mode_set=lambda mode=None: {"FINISHED"},
+            select_all=lambda action=None: {"FINISHED"},
+        ),
+        mesh=types.SimpleNamespace(
+            primitive_cube_add=lambda **kwargs: {"FINISHED"},
+        ),
+    )
+    module.context = types.SimpleNamespace(
+        view_layer=FakeViewLayer(),
+        scene=FakeScene(),
+    )
     sys.modules["bpy"] = module
     return module
 

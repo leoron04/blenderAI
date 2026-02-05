@@ -22,6 +22,12 @@ class _DummyLayout:
     def operator(self, *args, **kwargs):
         return type("Op", (), {"bl_idname": "dummy"})
 
+    def separator(self, *args, **kwargs):
+        return None
+
+    def split(self, *args, **kwargs):
+        return self
+
 
 def test_main_panel_draw_uses_layout(fake_context):
     panel = ui.BLENDER_AI_PT_main_panel()
