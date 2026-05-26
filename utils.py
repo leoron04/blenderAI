@@ -66,3 +66,26 @@ def truncate_secret(value: str, keep: int = 4) -> str:
 def pretty_json(data: Any, limit: int = 2000) -> str:
     payload = json.dumps(data, indent=2)
     return payload[:limit]
+
+
+def get_config_dir(subpath=""):
+    """Gets the appropriate configuration directory, ensuring it exists."""
+    import bpy
+    import os
+
+    # Check if we are running in a real Blender environment or mocked test env
+    if hasattr(bpy, "utils") and hasattr(bpy.utils, "user_resource"):
+        base = bpy.utils.user_resource('CONFIG', path='blender_ai', create=True)
+    else:
+        base = os.path.expanduser("~/.config/blender_ai")
+        os.makedirs(base, exist_ok=True)
+
+    if subpath:
+        full_path = os.path.join(base, subpath)
+        # If the subpath doesn't look like a file (no extension), make it a dir
+        if not os.path.splitext(subpath)[1] and not full_path.endswith((".log", ".json")):
+            os.makedirs(full_path, exist_ok=True)
+        else:
+            os.makedirs(os.path.dirname(full_path), exist_ok=True)
+        return full_path
+    return base

@@ -10,8 +10,9 @@ from typing import Deque, Dict, Optional
 
 import bpy
 
-DEFAULT_AUDIT_PATH = os.path.expanduser("~/.config/blender_ai/audit.log")
-DEFAULT_EXPORT_DIR = os.path.expanduser("~/.config/blender_ai/exports")
+from . import utils
+DEFAULT_AUDIT_PATH = utils.get_config_dir("audit.log")
+DEFAULT_EXPORT_DIR = utils.get_config_dir("exports")
 
 
 class RateLimiter:

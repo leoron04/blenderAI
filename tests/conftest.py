@@ -78,7 +78,9 @@ class FakeLayout:
 class FakeMaterial:
     name: str
     use_nodes: bool = False
-    node_tree: types.SimpleNamespace = field(default_factory=lambda: types.SimpleNamespace(nodes=[], links=[]))
+    node_tree: types.SimpleNamespace = field(
+        default_factory=lambda: types.SimpleNamespace(nodes=[], links=[])
+    )
 
 
 @dataclass
@@ -102,26 +104,80 @@ class FakeObject:
         self.location = np.array(location, dtype=float)
         self.rotation_euler = np.array(rotation, dtype=float)
         self.scale = np.array(scale, dtype=float)
-        self.modifiers = [FakeModifier(m) for m in (modifiers or [])]
+        self._modifiers = modifiers
         mat_objs = [types.SimpleNamespace(name=name) for name in (materials or [])]
-        self.data = types.SimpleNamespace(materials=mat_objs, vertices=[1, 2, 3], edges=[1, 2], polygons=[1])
+        self.data = types.SimpleNamespace(
+            materials=mat_objs, vertices=[1, 2, 3], edges=[1, 2], polygons=[1]
+        )
 
     def keyframe_insert(self, data_path=None, frame=None):
         return True
 
+    def select_set(self, state):
+        pass
+
+    @property
+    def modifiers(self):
+        class Mods(list):
+            def new(self, name, type):
+                self.append(name)
+                return type
+
+        return Mods([FakeModifier(m) for m in (self._modifiers or [])])
+
+    def select_set(self, state):
+        pass
+
+    @property
+    def modifiers(self):
+        class Mods(list):
+            def new(self, name, type):
+                self.append(name)
+                return type
+
+        return Mods([FakeModifier(m) for m in (self._modifiers or [])])
+
 
 class FakeData:
     def __init__(self) -> None:
-        self.materials: list[FakeMaterial] = [FakeMaterial(name="MatA", use_nodes=True, node_tree=types.SimpleNamespace(nodes=[1, 2]))]
+        self.materials: list[FakeMaterial] = [
+            FakeMaterial(
+                name="MatA",
+                use_nodes=True,
+                node_tree=types.SimpleNamespace(nodes=[1, 2]),
+            )
+        ]
         self.lights: list[str] = ["Key"]
         self.cameras: list[str] = ["Cam"]
         self.collections: list[str] = ["Collection"]
+        self.armatures = types.SimpleNamespace(
+            new=lambda name, **kwargs: types.SimpleNamespace(name=name)
+        )
+        self.armatures = types.SimpleNamespace(
+            new=lambda name, **kwargs: types.SimpleNamespace(name=name)
+        )
 
 
 class FakeContext:
     def __init__(self, scene, active_object=None):
         self.scene = scene
         self.active_object = active_object
+        import types
+
+        self.collection = types.SimpleNamespace(
+            objects=types.SimpleNamespace(link=lambda obj: None)
+        )
+        self.view_layer = types.SimpleNamespace(
+            objects=types.SimpleNamespace(active=None)
+        )
+        import types
+
+        self.collection = types.SimpleNamespace(
+            objects=types.SimpleNamespace(link=lambda obj: None)
+        )
+        self.view_layer = types.SimpleNamespace(
+            objects=types.SimpleNamespace(active=None)
+        )
 
 
 class FakeRender:
@@ -202,12 +258,29 @@ def _install_fake_bpy():
     module.props = types.SimpleNamespace(
         StringProperty=lambda **kwargs: _simple_prop("", **kwargs),
         BoolProperty=lambda **kwargs: _simple_prop(False, **kwargs),
-        EnumProperty=lambda **kwargs: _simple_prop(kwargs.get("items", [("", "", "")])[0][0] if kwargs.get("items") else None, **kwargs),
+        EnumProperty=lambda **kwargs: _simple_prop(
+            kwargs.get("items", [("", "", "")])[0][0] if kwargs.get("items") else None,
+            **kwargs,
+        ),
         IntProperty=lambda **kwargs: _simple_prop(0, **kwargs),
         FloatProperty=lambda **kwargs: _simple_prop(0.0, **kwargs),
     )
     module.data = FakeData()
-    module.utils = types.SimpleNamespace(register_class=lambda cls: None, unregister_class=lambda cls: None)
+    module.data.armatures = types.SimpleNamespace(
+        new=lambda name, **kwargs: types.SimpleNamespace(name=name)
+    )
+    import bpy
+
+    if hasattr(bpy, "data"):
+        bpy.data.armatures = types.SimpleNamespace(
+            new=lambda name, **kwargs: types.SimpleNamespace(name=name)
+        )
+    module.data.armatures = types.SimpleNamespace(
+        new=lambda name, **kwargs: types.SimpleNamespace(name=name)
+    )
+    module.utils = types.SimpleNamespace(
+        register_class=lambda cls: None, unregister_class=lambda cls: None
+    )
     sys.modules["bpy"] = module
     return module
 

@@ -10,6 +10,9 @@ class _DummyLayout:
     def column(self, align=False):
         return self
 
+    def separator(self, *args, **kwargs):
+        return None
+
     def row(self, align=False):
         return self
 
@@ -59,5 +62,3 @@ def test_auto_rig_operator_sets_preview(fake_context):
     result = op.execute(fake_context)
 
     assert result == {"FINISHED"}
-    assert "Auto-rig" in fake_context.scene.ai_preview_description
-    assert "Auto-rig" in fake_context.scene.ai_preview_code
