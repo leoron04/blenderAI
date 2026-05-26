@@ -125,18 +125,6 @@ class FakeObject:
 
         return Mods([FakeModifier(m) for m in (self._modifiers or [])])
 
-    def select_set(self, state):
-        pass
-
-    @property
-    def modifiers(self):
-        class Mods(list):
-            def new(self, name, type):
-                self.append(name)
-                return type
-
-        return Mods([FakeModifier(m) for m in (self._modifiers or [])])
-
 
 class FakeData:
     def __init__(self) -> None:
@@ -153,23 +141,12 @@ class FakeData:
         self.armatures = types.SimpleNamespace(
             new=lambda name, **kwargs: types.SimpleNamespace(name=name)
         )
-        self.armatures = types.SimpleNamespace(
-            new=lambda name, **kwargs: types.SimpleNamespace(name=name)
-        )
 
 
 class FakeContext:
     def __init__(self, scene, active_object=None):
         self.scene = scene
         self.active_object = active_object
-        import types
-
-        self.collection = types.SimpleNamespace(
-            objects=types.SimpleNamespace(link=lambda obj: None)
-        )
-        self.view_layer = types.SimpleNamespace(
-            objects=types.SimpleNamespace(active=None)
-        )
         import types
 
         self.collection = types.SimpleNamespace(
@@ -266,15 +243,6 @@ def _install_fake_bpy():
         FloatProperty=lambda **kwargs: _simple_prop(0.0, **kwargs),
     )
     module.data = FakeData()
-    module.data.armatures = types.SimpleNamespace(
-        new=lambda name, **kwargs: types.SimpleNamespace(name=name)
-    )
-    import bpy
-
-    if hasattr(bpy, "data"):
-        bpy.data.armatures = types.SimpleNamespace(
-            new=lambda name, **kwargs: types.SimpleNamespace(name=name)
-        )
     module.data.armatures = types.SimpleNamespace(
         new=lambda name, **kwargs: types.SimpleNamespace(name=name)
     )

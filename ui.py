@@ -45,6 +45,8 @@ class BLENDER_AI_PT_main_panel(bpy.types.Panel):
         box_adv = box.box()
         box_adv.label(text="Advanced Options", icon="MODIFIER")
         col_adv = box_adv.column(align=True)
+        col_adv.operator("blender_ai.install_local_model", icon="SYSTEM")
+        col_adv.separator()
         col_adv.prop(scene, "ai_ensemble_enabled", text="Ensemble Mode")
         if scene.ai_ensemble_enabled:
             col_adv.prop(scene, "ai_ensemble_weights", text="Weights (JSON)")
@@ -63,7 +65,11 @@ class BLENDER_AI_PT_main_panel(bpy.types.Panel):
         box.label(text="AI Suggestions", icon="LIGHT")
         col = box.column(align=True)
         col.prop(scene, "ai_prompt", text="Prompt")
-        col.operator(operators.BLENDER_AI_OT_generate_suggestions.bl_idname, text="Generate Suggestions", icon="PLAY")
+        col.operator(
+            operators.BLENDER_AI_OT_generate_suggestions.bl_idname,
+            text="Generate Suggestions",
+            icon="PLAY",
+        )
 
         # Response info
         if scene.ai_last_provider:
@@ -75,13 +81,19 @@ class BLENDER_AI_PT_main_panel(bpy.types.Panel):
                 info_box.label(text="(Cached response)", icon="FILE_CACHE")
 
         col.prop(scene, "ai_last_response", text="Response")
-        col.operator("blender_ai.generate_animation", text="Generate Animation", icon="ANIM")
+        col.operator(
+            "blender_ai.generate_animation", text="Generate Animation", icon="ANIM"
+        )
 
         # Scene Inspector section
         box = layout.box()
         box.label(text="Scene Inspector", icon="SCENE_DATA")
         col = box.column(align=True)
-        col.operator(operators.BLENDER_AI_OT_analyze_scene.bl_idname, text="Analyze Scene", icon="VIEWZOOM")
+        col.operator(
+            operators.BLENDER_AI_OT_analyze_scene.bl_idname,
+            text="Analyze Scene",
+            icon="VIEWZOOM",
+        )
         if scene.ai_scene_snapshot:
             col.prop(scene, "ai_scene_snapshot", text="")
 
@@ -115,8 +127,16 @@ class BLENDER_AI_PT_code_panel(bpy.types.Panel):
 
         # Action buttons
         row = box.row(align=True)
-        row.operator(operators.BLENDER_AI_OT_preview_code.bl_idname, text="Update Preview", icon="FILE_REFRESH")
-        row.operator(operators.BLENDER_AI_OT_apply_preview.bl_idname, text="Execute Code", icon="PLAY")
+        row.operator(
+            operators.BLENDER_AI_OT_preview_code.bl_idname,
+            text="Update Preview",
+            icon="FILE_REFRESH",
+        )
+        row.operator(
+            operators.BLENDER_AI_OT_apply_preview.bl_idname,
+            text="Execute Code",
+            icon="PLAY",
+        )
 
         # Safety warning
         warn = box.box()
@@ -145,15 +165,21 @@ class BLENDER_AI_PT_actions_panel(bpy.types.Panel):
         row.label(text="Metals:")
         op = row.operator(operators.BLENDER_AI_OT_auto_material.bl_idname, text="Gold")
         op.preset = "metal_gold"
-        op = row.operator(operators.BLENDER_AI_OT_auto_material.bl_idname, text="Silver")
+        op = row.operator(
+            operators.BLENDER_AI_OT_auto_material.bl_idname, text="Silver"
+        )
         op.preset = "metal_silver"
-        op = row.operator(operators.BLENDER_AI_OT_auto_material.bl_idname, text="Copper")
+        op = row.operator(
+            operators.BLENDER_AI_OT_auto_material.bl_idname, text="Copper"
+        )
         op.preset = "metal_copper"
 
         # Other materials
         row2 = box.row(align=True)
         row2.label(text="Other:")
-        op = row2.operator(operators.BLENDER_AI_OT_auto_material.bl_idname, text="Glass")
+        op = row2.operator(
+            operators.BLENDER_AI_OT_auto_material.bl_idname, text="Glass"
+        )
         op.preset = "glass"
         op = row2.operator(operators.BLENDER_AI_OT_auto_material.bl_idname, text="Wood")
         op.preset = "wood"
@@ -161,9 +187,13 @@ class BLENDER_AI_PT_actions_panel(bpy.types.Panel):
         op.preset = "skin"
 
         row3 = box.row(align=True)
-        op = row3.operator(operators.BLENDER_AI_OT_auto_material.bl_idname, text="Plastic Glossy")
+        op = row3.operator(
+            operators.BLENDER_AI_OT_auto_material.bl_idname, text="Plastic Glossy"
+        )
         op.preset = "plastic_glossy"
-        op = row3.operator(operators.BLENDER_AI_OT_auto_material.bl_idname, text="Emissive")
+        op = row3.operator(
+            operators.BLENDER_AI_OT_auto_material.bl_idname, text="Emissive"
+        )
         op.preset = "emissive"
 
         # Lighting section
@@ -176,11 +206,15 @@ class BLENDER_AI_PT_actions_panel(bpy.types.Panel):
         op.style = "THREE_POINT"
         op = row.operator(operators.BLENDER_AI_OT_auto_light.bl_idname, text="Studio")
         op.style = "STUDIO"
-        op = row.operator(operators.BLENDER_AI_OT_auto_light.bl_idname, text="Rembrandt")
+        op = row.operator(
+            operators.BLENDER_AI_OT_auto_light.bl_idname, text="Rembrandt"
+        )
         op.style = "REMBRANDT"
 
         row2 = col.row(align=True)
-        op = row2.operator(operators.BLENDER_AI_OT_auto_light.bl_idname, text="Dramatic")
+        op = row2.operator(
+            operators.BLENDER_AI_OT_auto_light.bl_idname, text="Dramatic"
+        )
         op.style = "DRAMATIC"
         op = row2.operator(operators.BLENDER_AI_OT_auto_light.bl_idname, text="Sun")
         op.style = "OUTDOOR_SUN"
@@ -208,13 +242,19 @@ class BLENDER_AI_PT_actions_panel(bpy.types.Panel):
         row = col.row(align=True)
         op = row.operator(operators.BLENDER_AI_OT_auto_geometry.bl_idname, text="Grid")
         op.pattern = "GRID"
-        op = row.operator(operators.BLENDER_AI_OT_auto_geometry.bl_idname, text="Scatter")
+        op = row.operator(
+            operators.BLENDER_AI_OT_auto_geometry.bl_idname, text="Scatter"
+        )
         op.pattern = "SCATTER"
-        op = row.operator(operators.BLENDER_AI_OT_auto_geometry.bl_idname, text="Circular")
+        op = row.operator(
+            operators.BLENDER_AI_OT_auto_geometry.bl_idname, text="Circular"
+        )
         op.pattern = "CIRCULAR"
 
         row2 = col.row(align=True)
-        op = row2.operator(operators.BLENDER_AI_OT_auto_geometry.bl_idname, text="Spiral")
+        op = row2.operator(
+            operators.BLENDER_AI_OT_auto_geometry.bl_idname, text="Spiral"
+        )
         op.pattern = "SPIRAL"
         op = row2.operator(operators.BLENDER_AI_OT_auto_geometry.bl_idname, text="Wave")
         op.pattern = "WAVE"

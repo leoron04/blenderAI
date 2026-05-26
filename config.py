@@ -15,7 +15,7 @@ from . import utils
 
 class AIModel(Enum):
     """Available AI models with metadata."""
-    
+
     CHATGPT_4 = "gpt-4"
     CHATGPT_35_TURBO = "gpt-3.5-turbo"
     CLAUDE_3_OPUS = "claude-3-opus-20240229"
@@ -23,13 +23,14 @@ class AIModel(Enum):
     GEMINI_PRO = "gemini-pro"
     GEMINI_ULTRA = "gemini-ultra"
     LOCAL_LLAMA = "llama-2-7b"
+    OLLAMA_LOCAL = "ollama"
     AUTO = "auto"
 
 
 @dataclass
 class ModelInfo:
     """Information about an AI model."""
-    
+
     id: str
     name: str
     provider: str
@@ -41,7 +42,7 @@ class ModelInfo:
     supports_code: bool = True
     recommended_for: List[str] = None
     icon: str = "bot"
-    
+
     def __post_init__(self):
         if self.recommended_for is None:
             self.recommended_for = []
@@ -59,7 +60,7 @@ MODEL_INFO: Dict[str, ModelInfo] = {
         context_window=8000,
         supports_vision=True,
         icon="brain",
-        recommended_for=["Complex scenes", "Advanced modeling", "Code generation"]
+        recommended_for=["Complex scenes", "Advanced modeling", "Code generation"],
     ),
     "gpt-3.5-turbo": ModelInfo(
         id="gpt-3.5-turbo",
@@ -71,7 +72,7 @@ MODEL_INFO: Dict[str, ModelInfo] = {
         context_window=4000,
         supports_vision=False,
         icon="lightning",
-        recommended_for=["Quick edits", "Simple tasks", "Budget-friendly"]
+        recommended_for=["Quick edits", "Simple tasks", "Budget-friendly"],
     ),
     "claude-3-opus": ModelInfo(
         id="claude-3-opus",
@@ -83,7 +84,7 @@ MODEL_INFO: Dict[str, ModelInfo] = {
         context_window=200000,
         supports_vision=True,
         icon="palette",
-        recommended_for=["Large projects", "Detailed scenes", "Long context"]
+        recommended_for=["Large projects", "Detailed scenes", "Long context"],
     ),
     "claude-3-sonnet": ModelInfo(
         id="claude-3-sonnet",
@@ -95,7 +96,7 @@ MODEL_INFO: Dict[str, ModelInfo] = {
         context_window=200000,
         supports_vision=True,
         icon="music",
-        recommended_for=["Balanced tasks", "Good quality", "Reasonable cost"]
+        recommended_for=["Balanced tasks", "Good quality", "Reasonable cost"],
     ),
     "gemini-pro": ModelInfo(
         id="gemini-pro",
@@ -107,7 +108,24 @@ MODEL_INFO: Dict[str, ModelInfo] = {
         context_window=30000,
         supports_vision=False,
         icon="sparkles",
-        recommended_for=["Scene analysis", "Material creation", "Optimization"]
+        recommended_for=["Scene analysis", "Material creation", "Optimization"],
+    ),
+    "ollama": ModelInfo(
+        id="ollama",
+        name="Ollama (Local Auto)",
+        provider="Local",
+        speed="Fast",
+        quality="4 stars",
+        cost="Free",
+        context_window=8000,
+        supports_vision=False,
+        icon="robot",
+        recommended_for=[
+            "Privacy",
+            "Offline use",
+            "Local processing",
+            "Hardware auto-detect",
+        ],
     ),
     "llama-2-7b": ModelInfo(
         id="llama-2-7b",
@@ -119,14 +137,14 @@ MODEL_INFO: Dict[str, ModelInfo] = {
         context_window=4000,
         supports_vision=False,
         icon="robot",
-        recommended_for=["Privacy", "Offline use", "Local processing"]
+        recommended_for=["Privacy", "Offline use", "Local processing"],
     ),
 }
 
 
 class APIConfig:
     """Easy API configuration for BlenderAI."""
-    
+
     def __init__(self):
         """Initialize API configuration from environment or defaults."""
         env_config, errors = security_hardening.validate_environment()
@@ -135,7 +153,9 @@ class APIConfig:
         self.anthropic_api_key = env_config.get("anthropic_api_key", "")
         self.google_api_key = env_config.get("google_api_key", "")
         self.selected_model = os.getenv("BLENDER_AI_MODEL", "auto")
-        self.auto_mode_enabled = os.getenv("BLENDER_AI_AUTO_MODE", "true").lower() == "true"
+        self.auto_mode_enabled = (
+            os.getenv("BLENDER_AI_AUTO_MODE", "true").lower() == "true"
+        )
         self._assert_env_only()
 
     def _assert_env_only(self) -> None:
@@ -146,8 +166,10 @@ class APIConfig:
             ("GOOGLE_API_KEY", self.google_api_key),
         ]:
             if value and not utils.validate_api_key(value):
-                self.validation_errors.append(f"{name} non valida o formattazione errata.")
-    
+                self.validation_errors.append(
+                    f"{name} non valida o formattazione errata."
+                )
+
     def set_openai_key(self, api_key: str) -> bool:
         """Set OpenAI API key."""
         if not api_key or len(api_key) < 20:
@@ -155,7 +177,7 @@ class APIConfig:
         self.openai_api_key = api_key
         os.environ["OPENAI_API_KEY"] = api_key
         return True
-    
+
     def set_anthropic_key(self, api_key: str) -> bool:
         """Set Anthropic API key."""
         if not api_key or len(api_key) < 20:
@@ -163,7 +185,7 @@ class APIConfig:
         self.anthropic_api_key = api_key
         os.environ["ANTHROPIC_API_KEY"] = api_key
         return True
-    
+
     def set_google_key(self, api_key: str) -> bool:
         """Set Google API key."""
         if not api_key or len(api_key) < 20:
@@ -171,49 +193,76 @@ class APIConfig:
         self.google_api_key = api_key
         os.environ["GOOGLE_API_KEY"] = api_key
         return True
-    
+
     def get_available_models(self) -> List[Tuple[str, str, str]]:
-        """Get list of models with available API keys.
-        
+        """Get list of models with available API keys or CLI auth.
+
         Returns:
             List of (model_id, model_name, description) tuples.
         """
         available = []
-        
+
+        # Check Anthropic (API key or Claude Code CLI token)
+        has_anthropic = bool(self.anthropic_api_key)
+        if not has_anthropic:
+            # Check for claude CLI config (usually in ~/.claude.json or ~/.config/claude/config.json)
+            # Claude Code stores OAuth tokens here
+            has_anthropic = os.path.exists(
+                os.path.expanduser("~/.claude.json")
+            ) or os.path.exists(os.path.expanduser("~/.config/claude/config.json"))
+
+        if has_anthropic:
+            available.append(("claude-3-opus", "Claude 3 Opus", "Anthropic"))
+            available.append(("claude-3-sonnet", "Claude 3 Sonnet", "Anthropic"))
+
+        # Check OpenAI
         if self.openai_api_key:
             available.append(("gpt-4", "GPT-4", "OpenAI GPT-4"))
             available.append(("gpt-3.5-turbo", "GPT-3.5 Turbo", "OpenAI GPT-3.5"))
-        
-        if self.anthropic_api_key:
-            available.append(("claude-3-opus", "Claude 3 Opus", "Anthropic"))
-            available.append(("claude-3-sonnet", "Claude 3 Sonnet", "Anthropic"))
-        
-        if self.google_api_key:
+
+        # Check Google (API key or gcloud ADC)
+        has_google = bool(self.google_api_key)
+        if not has_google:
+            # Check for Application Default Credentials
+            adc_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+            if adc_path and os.path.exists(adc_path):
+                has_google = True
+            else:
+                has_google = os.path.exists(
+                    os.path.expanduser(
+                        "~/.config/gcloud/application_default_credentials.json"
+                    )
+                )
+
+        if has_google:
             available.append(("gemini-pro", "Gemini Pro", "Google Gemini"))
-        
+
         # Local models are always available
+        available.append(
+            ("ollama", "Ollama (Local GPU)", "Auto-configured local model")
+        )
         available.append(("llama-2-7b", "Llama 2 (Local)", "Offline"))
         available.append(("auto", "Auto Select (Recommended)", "Selezione dinamica"))
-        
+
         return available
-    
+
     def select_best_model(self, task_type: str = "general") -> str:
         """Intelligently select best model for task.
-        
+
         Args:
             task_type: "complex", "fast", "vision", "coding", or "general"
-        
+
         Returns:
             Selected model ID.
         """
         available = {m[0]: m[0] for m in self.get_available_models()}
-        
+
         # Remove 'auto' from available for selection
         available.pop("auto", None)
-        
+
         if not available:
             return "llama-2-7b"
-        
+
         # Task-specific recommendations
         if task_type == "complex":
             if "gpt-4" in available:
@@ -222,7 +271,7 @@ class APIConfig:
                 return "claude-3-opus"
             if "gpt-3.5-turbo" in available:
                 return "gpt-3.5-turbo"
-        
+
         elif task_type == "fast":
             if "gpt-3.5-turbo" in available:
                 return "gpt-3.5-turbo"
@@ -230,7 +279,7 @@ class APIConfig:
                 return "gemini-pro"
             if "claude-3-sonnet" in available:
                 return "claude-3-sonnet"
-        
+
         elif task_type == "vision":
             if "gpt-4" in available:
                 return "gpt-4"
@@ -238,7 +287,7 @@ class APIConfig:
                 return "claude-3-opus"
             if "claude-3-sonnet" in available:
                 return "claude-3-sonnet"
-        
+
         elif task_type == "coding":
             if "gpt-4" in available:
                 return "gpt-4"
@@ -246,25 +295,27 @@ class APIConfig:
                 return "claude-3-opus"
             if "gpt-3.5-turbo" in available:
                 return "gpt-3.5-turbo"
-        
+
         quality_order = [
             "gpt-4",
             "claude-3-opus",
             "claude-3-sonnet",
             "gpt-3.5-turbo",
             "gemini-pro",
-            "llama-2-7b"
+            "llama-2-7b",
         ]
-        
+
         for model in quality_order:
             if model in available:
                 return model
-        
+
         return list(available.keys())[0]
-    
+
     def is_configured(self) -> bool:
         """Check if at least one API is configured."""
-        return bool(self.openai_api_key or self.anthropic_api_key or self.google_api_key)
+        return bool(
+            self.openai_api_key or self.anthropic_api_key or self.google_api_key
+        )
 
     def validate_environment(self) -> List[str]:
         """Return environment validation errors without leaking secrets."""
@@ -277,10 +328,10 @@ api_config = APIConfig()
 
 def get_model_info(model_id: str) -> Optional[ModelInfo]:
     """Get detailed information about a model.
-    
+
     Args:
         model_id: Model identifier
-    
+
     Returns:
         ModelInfo object or None if not found.
     """
@@ -289,7 +340,7 @@ def get_model_info(model_id: str) -> Optional[ModelInfo]:
 
 def get_recommended_model() -> str:
     """Get recommended model for current project.
-    
+
     Returns:
         Model ID of recommended model.
     """

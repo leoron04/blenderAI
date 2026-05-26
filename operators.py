@@ -1256,6 +1256,46 @@ class BLENDER_AI_OT_auto_geometry(bpy.types.Operator):
 # CLASS REGISTRATION
 # =============================================================================
 
+
+class BLENDER_AI_OT_install_local_model(bpy.types.Operator):
+    """Install and configure the best local model (Ollama) based on your hardware"""
+    bl_idname = "blender_ai.install_local_model"
+    bl_label = "Auto-Install Local Model"
+    bl_options = {"REGISTER"}
+
+    def execute(self, context: bpy.types.Context) -> set[str]:
+        from .local_installer import LocalModelInstaller
+        import threading
+
+        self.report({'INFO'}, "Analisi hardware in corso...")
+        installer = LocalModelInstaller()
+        hw_info = installer.check_hardware()
+
+        self.report({'INFO'}, f"Trovato: {hw_info['RAM']:.1f}GB RAM, {hw_info['VRAM']:.1f}GB VRAM ({hw_info['GPU']})")
+
+        model = installer.suggest_model()
+        self.report({'INFO'}, f"Modello suggerito: {model}. Inizio installazione...")
+
+        def run_install():
+            success, msg_or_model = installer.install_ollama_and_model(
+                lambda m: print(f"[BlenderAI Installer] {m}")
+            )
+            if success:
+                print(f"[BlenderAI] Successo! Modello pronto all'uso: {msg_or_model}.")
+            else:
+                print(f"[BlenderAI] Configurazione fallita: {msg_or_model}")
+
+        # Esegue in background per non freezare la UI durante il download di svariati GB
+        thread = threading.Thread(target=run_install)
+        thread.daemon = True
+        thread.start()
+
+        # Set the priority to prefer ollama immediately so it's ready when the download finishes
+        context.scene.ai_model = "ollama"
+
+        return {"FINISHED"}
+
+
 classes = (
     BLENDER_AI_OT_generate_suggestions,
     BLENDER_AI_OT_analyze_scene,
@@ -1265,4 +1305,5 @@ classes = (
     BLENDER_AI_OT_auto_light,
     BLENDER_AI_OT_auto_rig,
     BLENDER_AI_OT_auto_geometry,
+    BLENDER_AI_OT_install_local_model,
 )

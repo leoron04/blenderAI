@@ -102,18 +102,6 @@ except ImportError:  # pragma: no cover - fallback for non-Blender env
     )
     sys.modules["bpy"] = bpy
     bpy.ops = types.SimpleNamespace(
-        object=types.SimpleNamespace(mode_set=lambda mode: None, parent_set=lambda type: None),
-        armature=types.SimpleNamespace(bone_primitive_add=lambda name, head, tail: None)
-    )
-    bpy.ops = types.SimpleNamespace(
-        object=types.SimpleNamespace(
-            mode_set=lambda mode: None, parent_set=lambda type: None
-        ),
-        armature=types.SimpleNamespace(
-            bone_primitive_add=lambda name, head, tail: None
-        ),
-    )
-    bpy.ops = types.SimpleNamespace(
         object=types.SimpleNamespace(
             mode_set=lambda mode: None, parent_set=lambda type: None
         ),
