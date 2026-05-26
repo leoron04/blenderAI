@@ -20,7 +20,8 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 import numpy as np
 
-DEFAULT_CACHE_DIR = os.path.expanduser("~/.config/blender_ai/semantic_cache")
+from . import utils
+DEFAULT_CACHE_DIR = utils.get_config_dir("semantic_cache")
 PROFILE_PATH = os.path.join(DEFAULT_CACHE_DIR, "preferences.json")
 IDF_PATH = os.path.join(DEFAULT_CACHE_DIR, "idf_index.json")
 

@@ -7,7 +7,8 @@ import os
 import time
 from typing import Any, Dict, Optional, Tuple
 
-DEFAULT_CACHE_DIR = os.path.expanduser("~/.config/blender_ai/cache")
+from . import utils
+DEFAULT_CACHE_DIR = utils.get_config_dir("cache")
 
 
 def ensure_cache_dir(path: str = DEFAULT_CACHE_DIR) -> str:

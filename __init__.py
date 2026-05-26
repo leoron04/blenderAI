@@ -72,10 +72,55 @@ except ImportError:  # pragma: no cover - fallback for non-Blender env
             IntProperty=lambda **kwargs: kwargs.get("default", 0),
             FloatProperty=lambda **kwargs: kwargs.get("default", 0.0),
         ),
-        data=types.SimpleNamespace(materials=[], lights=[], cameras=[], collections=[]),
-        utils=types.SimpleNamespace(register_class=lambda cls: None, unregister_class=lambda cls: None),
+        data=types.SimpleNamespace(
+            materials=[],
+            lights=[],
+            cameras=[],
+            collections=[],
+            armatures=types.SimpleNamespace(
+                new=lambda name, **kwargs: types.SimpleNamespace(
+                    name=name,
+                    edit_bones=types.SimpleNamespace(
+                        new=lambda bname: types.SimpleNamespace(
+                            name=bname, head=(0, 0, 0), tail=(0, 0, 0), parent=None
+                        ),
+                        get=lambda bname: types.SimpleNamespace(
+                            name=bname, head=(0, 0, 0), tail=(0, 0, 0), parent=None
+                        ),
+                    ),
+                )
+            ),
+            objects=types.SimpleNamespace(
+                new=lambda name, object_data, **kwargs: types.SimpleNamespace(
+                    name=name, data=object_data, select_set=lambda state: None
+                )
+            ),
+        ),
+        utils=types.SimpleNamespace(
+            register_class=lambda cls: None, unregister_class=lambda cls: None
+        ),
     )
     sys.modules["bpy"] = bpy
+    bpy.ops = types.SimpleNamespace(
+        object=types.SimpleNamespace(mode_set=lambda mode: None, parent_set=lambda type: None),
+        armature=types.SimpleNamespace(bone_primitive_add=lambda name, head, tail: None)
+    )
+    bpy.ops = types.SimpleNamespace(
+        object=types.SimpleNamespace(
+            mode_set=lambda mode: None, parent_set=lambda type: None
+        ),
+        armature=types.SimpleNamespace(
+            bone_primitive_add=lambda name, head, tail: None
+        ),
+    )
+    bpy.ops = types.SimpleNamespace(
+        object=types.SimpleNamespace(
+            mode_set=lambda mode: None, parent_set=lambda type: None
+        ),
+        armature=types.SimpleNamespace(
+            bone_primitive_add=lambda name, head, tail: None
+        ),
+    )
 
 _logger = logging.getLogger("blenderAI.import")
 if not _logger.handlers:
@@ -84,9 +129,14 @@ if not _logger.handlers:
     _logger.addHandler(handler)
 _logger.setLevel(logging.INFO)
 
+
 def _debug(msg: str, *args) -> None:
-    if os.getenv("BLENDERAI_DEBUG", "0") == "1" or os.getenv("BLENDERAI_DEBUG_IMPORT", "0") == "1":
+    if (
+        os.getenv("BLENDERAI_DEBUG", "0") == "1"
+        or os.getenv("BLENDERAI_DEBUG_IMPORT", "0") == "1"
+    ):
         _logger.info(msg, *args)
+
 
 _debug("Add-on import start")
 _debug("Add-on __file__: %s", __file__)
@@ -105,7 +155,9 @@ try:
     from . import visualization
     from . import enterprise
 except Exception:  # noqa: BLE001
-    _logger.error("Errore durante l'import dei moduli BlenderAI:\n%s", traceback.format_exc())
+    _logger.error(
+        "Errore durante l'import dei moduli BlenderAI:\n%s", traceback.format_exc()
+    )
     raise
 
 classes = (
@@ -144,11 +196,21 @@ def register():
         default="4.2",
     )
 
-    bpy.types.Scene.ai_openai_key = bpy.props.StringProperty(name="OpenAI API Key", default="", subtype="PASSWORD")
-    bpy.types.Scene.ai_anthropic_key = bpy.props.StringProperty(name="Anthropic API Key", default="", subtype="PASSWORD")
-    bpy.types.Scene.ai_google_key = bpy.props.StringProperty(name="Google API Key", default="", subtype="PASSWORD")
+    bpy.types.Scene.ai_openai_key = bpy.props.StringProperty(
+        name="OpenAI API Key", default="", subtype="PASSWORD"
+    )
+    bpy.types.Scene.ai_anthropic_key = bpy.props.StringProperty(
+        name="Anthropic API Key", default="", subtype="PASSWORD"
+    )
+    bpy.types.Scene.ai_google_key = bpy.props.StringProperty(
+        name="Google API Key", default="", subtype="PASSWORD"
+    )
     bpy.types.Scene.ai_temperature = bpy.props.FloatProperty(
-        name="Temperature", description="Creatività modello", default=0.4, min=0.0, max=1.0
+        name="Temperature",
+        description="Creatività modello",
+        default=0.4,
+        min=0.0,
+        max=1.0,
     )
     bpy.types.Scene.ai_ensemble_enabled = bpy.props.BoolProperty(
         name="Ensemble Multi-modello",
@@ -197,7 +259,11 @@ def register():
     )
     bpy.types.Scene.ai_role = bpy.props.EnumProperty(
         name="Ruolo",
-        items=[("admin", "Admin", ""), ("creator", "Creator", ""), ("viewer", "Viewer", "")],
+        items=[
+            ("admin", "Admin", ""),
+            ("creator", "Creator", ""),
+            ("viewer", "Viewer", ""),
+        ],
         default="creator",
     )
     bpy.types.Scene.ai_rate_limit = bpy.props.IntProperty(
@@ -206,12 +272,24 @@ def register():
         min=1,
         max=10000,
     )
-    bpy.types.Scene.ai_prompt = bpy.props.StringProperty(name="Prompt", default="Analizza la scena e proponi azioni.")
-    bpy.types.Scene.ai_last_response = bpy.props.StringProperty(name="Last Response", default="")
-    bpy.types.Scene.ai_last_provider = bpy.props.StringProperty(name="Last Provider", default="")
-    bpy.types.Scene.ai_last_model = bpy.props.StringProperty(name="Last Model", default="")
-    bpy.types.Scene.ai_last_cached = bpy.props.BoolProperty(name="Cached", default=False)
-    bpy.types.Scene.ai_scene_snapshot = bpy.props.StringProperty(name="Scene Snapshot", default="")
+    bpy.types.Scene.ai_prompt = bpy.props.StringProperty(
+        name="Prompt", default="Analizza la scena e proponi azioni."
+    )
+    bpy.types.Scene.ai_last_response = bpy.props.StringProperty(
+        name="Last Response", default=""
+    )
+    bpy.types.Scene.ai_last_provider = bpy.props.StringProperty(
+        name="Last Provider", default=""
+    )
+    bpy.types.Scene.ai_last_model = bpy.props.StringProperty(
+        name="Last Model", default=""
+    )
+    bpy.types.Scene.ai_last_cached = bpy.props.BoolProperty(
+        name="Cached", default=False
+    )
+    bpy.types.Scene.ai_scene_snapshot = bpy.props.StringProperty(
+        name="Scene Snapshot", default=""
+    )
     bpy.types.Scene.ai_doc_context = bpy.props.StringProperty(
         name="Doc Context",
         description="Contesto documentazione Blender recuperato via RAG",
@@ -222,20 +300,48 @@ def register():
         description="Suggerimenti documentazione basati sulla scena",
         default="",
     )
-    bpy.types.Scene.ai_preview_code = bpy.props.StringProperty(name="Preview Code", default="")
-    bpy.types.Scene.ai_preview_description = bpy.props.StringProperty(name="Preview Description", default="")
-    bpy.types.Scene.ai_node_graph = bpy.props.StringProperty(name="Node Graph", default="")
-    bpy.types.Scene.ai_node_suggestions = bpy.props.StringProperty(name="Node Suggestions", default="")
-    bpy.types.Scene.ai_asset_query = bpy.props.StringProperty(name="Asset Query", default="")
-    bpy.types.Scene.ai_asset_results = bpy.props.StringProperty(name="Asset Results", default="")
-    bpy.types.Scene.ai_render_report = bpy.props.StringProperty(name="Render Report", default="")
-    bpy.types.Scene.ai_batch_script = bpy.props.StringProperty(name="Batch Script", default="")
-    bpy.types.Scene.ai_perf_stats = bpy.props.StringProperty(name="Performance Stats", default="")
-    bpy.types.Scene.ai_overlay_preview = bpy.props.StringProperty(name="Overlay Preview", default="")
-    bpy.types.Scene.ai_keyframe_preview = bpy.props.StringProperty(name="Keyframe Preview", default="")
-    bpy.types.Scene.ai_node_heatmap = bpy.props.StringProperty(name="Node Heatmap", default="")
-    bpy.types.Scene.ai_usage_analytics = bpy.props.StringProperty(name="Usage Analytics", default="")
-    bpy.types.Scene.ai_export_path = bpy.props.StringProperty(name="Export Path", default="")
+    bpy.types.Scene.ai_preview_code = bpy.props.StringProperty(
+        name="Preview Code", default=""
+    )
+    bpy.types.Scene.ai_preview_description = bpy.props.StringProperty(
+        name="Preview Description", default=""
+    )
+    bpy.types.Scene.ai_node_graph = bpy.props.StringProperty(
+        name="Node Graph", default=""
+    )
+    bpy.types.Scene.ai_node_suggestions = bpy.props.StringProperty(
+        name="Node Suggestions", default=""
+    )
+    bpy.types.Scene.ai_asset_query = bpy.props.StringProperty(
+        name="Asset Query", default=""
+    )
+    bpy.types.Scene.ai_asset_results = bpy.props.StringProperty(
+        name="Asset Results", default=""
+    )
+    bpy.types.Scene.ai_render_report = bpy.props.StringProperty(
+        name="Render Report", default=""
+    )
+    bpy.types.Scene.ai_batch_script = bpy.props.StringProperty(
+        name="Batch Script", default=""
+    )
+    bpy.types.Scene.ai_perf_stats = bpy.props.StringProperty(
+        name="Performance Stats", default=""
+    )
+    bpy.types.Scene.ai_overlay_preview = bpy.props.StringProperty(
+        name="Overlay Preview", default=""
+    )
+    bpy.types.Scene.ai_keyframe_preview = bpy.props.StringProperty(
+        name="Keyframe Preview", default=""
+    )
+    bpy.types.Scene.ai_node_heatmap = bpy.props.StringProperty(
+        name="Node Heatmap", default=""
+    )
+    bpy.types.Scene.ai_usage_analytics = bpy.props.StringProperty(
+        name="Usage Analytics", default=""
+    )
+    bpy.types.Scene.ai_export_path = bpy.props.StringProperty(
+        name="Export Path", default=""
+    )
 
 
 def unregister():

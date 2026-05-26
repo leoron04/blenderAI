@@ -9,7 +9,8 @@ from typing import Dict, List, Optional
 
 import bpy
 
-ASSET_INDEX_PATH = os.path.expanduser("~/.config/blender_ai/assets_index.json")
+from . import utils
+ASSET_INDEX_PATH = utils.get_config_dir("assets_index.json")
 
 
 def _ensure_index_path(path: str = ASSET_INDEX_PATH) -> str:
