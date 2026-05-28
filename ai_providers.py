@@ -95,10 +95,11 @@ class AnthropicProvider:
 
     Supporta API Key standard o token di sessione di Claude Code CLI."""
 
-    def __init__(self, api_key: str = "", model: str = "claude-3-opus-20240229"):
+    def __init__(self, api_key: str = "", model: str = "claude-3-opus-20240229", request_timeout: int = 30, rate_limit: int = 60, rate_window: int = 60):
         self.name = "anthropic"
         self.model = model
         self.api_key = api_key
+        self.timeout = request_timeout
 
         # Check Claude Code CLI config if api_key is missing
         if not self.api_key:
@@ -184,16 +185,16 @@ class OllamaProvider:
 
 
 class GeminiProvider:
-    name = "gemini"
+    """Provider per Google Gemini.
 
-    def __init__(
-        self,
-        api_key: str,
-        model: str = "gemini-pro",
-        request_timeout: int = 30,
-        rate_limit: int = 60,
-        rate_window: int = 60,
-    ):
+    Supporta API key standard o Google Application Default Credentials (ADC)."""
+
+    def __init__(self, api_key: str = "", model: str = "gemini-pro", request_timeout: int = 30, rate_limit: int = 60, rate_window: int = 60):
+        self.name = "gemini"
+        self.model = model
+        self.api_key = api_key
+        self.use_adc = not bool(api_key)
+        self.timeout = request_timeout
         if not utils.validate_api_key(api_key):
             raise ValueError("Gemini API key non valida.")
         self.api_key = api_key
@@ -248,18 +249,21 @@ def build_provider_chain(
     gemini_window = int(config.get("gemini_rate_window", 60) or 60)
     request_timeout = int(config.get("request_timeout", 30) or 30)
     for provider in priority:
-        if provider == "anthropic" and utils.validate_api_key(
-            config.get("anthropic", "")
-        ):
-            chain.append(
-                AnthropicProvider(
-                    config["anthropic"],
-                    config.get("anthropic_model", "claude-3-opus-20240229"),
-                    request_timeout=request_timeout,
-                    rate_limit=anthropic_limit,
-                    rate_window=anthropic_window,
+        if provider == "anthropic":
+            key = config.get("anthropic", "")
+            # Instantiate if we have a key OR if the CLI token file exists
+            import os
+            cli_auth_exists = os.path.exists(os.path.expanduser("~/.claude.json")) or os.path.exists(os.path.expanduser("~/.config/claude/config.json"))
+            if utils.validate_api_key(key) or cli_auth_exists:
+                chain.append(
+                    AnthropicProvider(
+                        key,
+                        config.get("anthropic_model", "claude-3-opus-20240229"),
+                        request_timeout=request_timeout,
+                        rate_limit=anthropic_limit,
+                        rate_window=anthropic_window,
+                    )
                 )
-            )
         if provider == "openai" and utils.validate_api_key(config.get("openai", "")):
             chain.append(
                 OpenAIProvider(

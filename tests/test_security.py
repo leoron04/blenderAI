@@ -36,7 +36,8 @@ def test_export_suggestion_writes_masked_payload(tmp_path, monkeypatch):
     assert Path(path).suffix == ".json"
 
 
-def test_build_provider_chain_ignores_missing_keys():
+def test_build_provider_chain_ignores_missing_keys(monkeypatch):
+    monkeypatch.setattr("os.path.exists", lambda x: False)
     chain = ai_providers.build_provider_chain({"openai": "", "anthropic": "", "google": ""}, priority=["openai", "anthropic"])
     assert chain == []
 
